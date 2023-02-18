@@ -1,0 +1,24 @@
+{
+  "name": "frontbaseknowblog",
+  "version": "1.0.0",
+  "description": "个人前端知识点博客：用来面试用的",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "vuepress-theme-ououe": "^1.5.3"
+  },
+  "devDependencies": {
+    "patch-package": "^6.4.7",
+    "vuepress": "^1.9.7",
+    "vuepress-theme-reco": "^1.6.16"
+  },
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs",
+    "postinstall": "patch-package"
+  },
+  "author": "",
+  "license": "ISC"
+}
