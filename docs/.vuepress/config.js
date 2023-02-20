@@ -27,6 +27,7 @@ module.exports = {
     ],
     
     sidebar: [
+     
       {
         title: '基础',
         children: [
@@ -38,15 +39,6 @@ module.exports = {
           '/know/3.javascript-es6.md',
           '/know/4.javascript-手写题.md',
           '/know/5.css.md',
-          '/know/6.webpack.md',
-          '/know/7.算法.md',
-          "/know/8.vue.md",
-          "/know/9.react.md",
-          "/know/10.性能优化.md",
-          "/know/11.组件库构造.md",
-          "/know/12.ssr.md",
-          "/know/13.微前端.md",
-          "/know/14.vue3.md"
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
@@ -56,12 +48,31 @@ module.exports = {
         children: [
           '/know/八股/1.计算机网络.md',
           '/know/八股/2.Git.md',
-          '/know/八股/3.性能优化和安全.md',
-
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
-      
+      {
+        title: '框架',
+        children: [
+          "/know/框架/1.vue.md",
+          "/know/框架/2.react.md",
+          "/know/框架/3.ssr.md",
+          "/know/框架/4.微前端.md",
+          "/know/框架/5.vue3.md",
+        ],
+        initialOpenGroupIndex: 1 // 可选的, 默认值是 0
+      },
+      {
+        title: '优化 | 工程',
+        children: [
+          "/know/优化/3.性能优化和安全.md",
+          "/know/优化/6.webpack.md",
+          "/know/优化/7.算法.md",
+          "/know/优化/10.性能优化.md",
+          "/know/优化/11.组件库构造.md"
+        ],
+        initialOpenGroupIndex: 1 // 可选的, 默认值是 0
+      },
     ]
   },
 
