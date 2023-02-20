@@ -53,6 +53,7 @@ module.exports = {
       },
       {
         title: '框架',
+        collapsable: false,
         children: [
           "/know/框架/1.vue.md",
           "/know/框架/2.react.md",
@@ -64,6 +65,7 @@ module.exports = {
       },
       {
         title: '优化 | 工程',
+        collapsable: false,
         children: [
           "/know/优化/3.性能优化和安全.md",
           "/know/优化/6.webpack.md",
