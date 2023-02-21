@@ -30,6 +30,7 @@ module.exports = {
      
       {
         title: '基础',
+        collapsable: false,
         children: [
           '/know/1.html.md',
           '/know/2.0javascript基础.md',
@@ -67,11 +68,11 @@ module.exports = {
         title: '优化 | 工程',
         collapsable: false,
         children: [
-          "/know/优化/3.性能优化和安全.md",
-          "/know/优化/6.webpack.md",
-          "/know/优化/7.算法.md",
-          "/know/优化/10.性能优化.md",
-          "/know/优化/11.组件库构造.md"
+          "/know/优化/1.性能优化和安全.md",
+          "/know/优化/2.webpack.md",
+          "/know/优化/3.算法.md",
+          "/know/优化/4.性能优化.md",
+          "/know/优化/5.组件库构造.md"
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
