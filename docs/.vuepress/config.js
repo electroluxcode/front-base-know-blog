@@ -53,14 +53,15 @@ module.exports = {
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
       {
-        title: '框架',
+        title: '框架 | 工具',
         collapsable: false,
         children: [
           "/know/框架/1.vue.md",
           "/know/框架/2.react.md",
           "/know/框架/3.ssr.md",
           "/know/框架/4.微前端.md",
-          "/know/框架/5.vue3.md",
+          "/know/框架/6.nginx.md",
+          "/know/框架/7.python.md",
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
@@ -72,7 +73,8 @@ module.exports = {
           "/know/优化/2.webpack.md",
           "/know/优化/3.算法.md",
           "/know/优化/4.性能优化.md",
-          "/know/优化/5.组件库构造.md"
+          "/know/优化/5.组件库构造.md",
+          "/know/优化/6.webrtc.md"
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
