@@ -40,6 +40,8 @@ module.exports = {
           '/know/3.javascript-es6.md',
           '/know/4.javascript-手写题.md',
           '/know/5.css.md',
+          '/know/6.bug.md',
+          
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
