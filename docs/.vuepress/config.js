@@ -76,7 +76,8 @@ module.exports = {
           "/know/优化/3.算法.md",
           "/know/优化/4.性能优化.md",
           "/know/优化/5.组件库构造.md",
-          "/know/优化/6.webrtc.md"
+          "/know/优化/6.webrtc.md",
+          "/know/优化/7.tensorFlow.md"
         ],
         initialOpenGroupIndex: 1 // 可选的, 默认值是 0
       },
