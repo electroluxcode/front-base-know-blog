@@ -2,6 +2,10 @@
 
 style={{background:'red'}} 类似于这种不能直接写进入不然会报错
 
+2023/4/10 分解webpack 生命周期 + 添加web component的学习
+
+2023/4/08 添加nginx 的实操
+
 2023/4/01 添加tensorflow多线性模型的学习
 
 2023/3/20 添加tensorflow的学习
