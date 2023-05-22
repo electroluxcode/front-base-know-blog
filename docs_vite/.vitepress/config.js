@@ -16,11 +16,12 @@ export default defineConfig({
     outlineTitle: "目录",
     // lastUpdatedText: 'Updated Date',
     i18nRouting: true,
-    logo: "/logo.svg",
+    logo: "/front-base-know-blog/logo.svg",
     nav: [
       { text: "首页", link: "/" },
-      { text: "基础", link: "/know/1html" },
-      { text: "高级", link: "/supper/基本/index" },
+      { text: "前端基础", link: "/know/1html" },
+      { text: "前端工程化", link: "/supper/1代码优化" },
+      { text: "Python", link: "/python/flask.md" },
     ],
     socialLinks: [{ icon: "github", link: "https://gitee.com/Electrolux" }],
     footer: {
@@ -67,15 +68,15 @@ export default defineConfig({
           items: [
             { text: "vue", link: "/know/框架/1vue" },
             { text: "react", link: "/know/框架/2react" },
-            { text: "ssr", link: "/know/计算机基础/3ssr" },
-            { text: "微前端", link: "/know/计算机基础/4微前端" },
-            { text: "vue3", link: "/know/计算机基础/5vue3" },
-            { text: "nginx", link: "/know/计算机基础/6nginx" },
-            { text: "python", link: "/know/计算机基础/7python" },
-            { text: "ffmpeg", link: "/know/计算机基础/8ffmpeg" },
-            { text: "shell", link: "/know/计算机基础/9shell" },
-            { text: "aframe", link: "/know/计算机基础/10aframe" },
-            { text: "逆向数据crawl", link: "/know/计算机基础/11逆向数据crawl" },
+            { text: "ssr", link: "/know/框架/3ssr" },
+            { text: "微前端", link: "/know/框架/4微前端" },
+            { text: "vue3", link: "/know/框架/5vue3" },
+            { text: "nginx", link: "/know/框架/6nginx" },
+            { text: "python", link: "/know/框架/7python" },
+            { text: "ffmpeg", link: "/know/框架/8ffmpeg" },
+            { text: "shell", link: "/know/框架/9shell" },
+            { text: "aframe", link: "/know/框架/10aframe" },
+            { text: "逆向数据crawl", link: "/know/框架/11逆向数据crawl" },
           ],
         },
         {
@@ -102,12 +103,93 @@ export default defineConfig({
         //   ]
         // }
       ],
-      // "/supper/": [
-      //   {
-      //     text: "通用",
-      //     items: [{ text: "icon", link: "/supper/基本/index" }],
-      //   },
-      // ],
+      "/python/": [{
+        text: "python 基础",
+          collapsed: false,
+          items: [
+            { text: "服务器", link: "/python/flask" },
+      ]}],
+      "/supper/": [
+        {
+          text: "代码高级",
+          collapsed: false,
+          items: [
+            { text: "代码优化 | 设计模式", link: "/supper/1代码优化" },
+            { text: "设计模式与js", link: "/supper/2实用算法" },
+            { text: "性能优化", link: "/supper/3性能优化" },
+            { text: "UI设计", link: "/supper/4UI设计" },
+            // { text: "设计模式与js", link: "/supper/2设计模式与js" }
+            // { text: "设计模式与js", link: "/supper/2设计模式与js" }
+          ],
+        },
+        {
+          text: "工程化",
+          collapsed: false,
+          items: [
+            { text: "工程化基础", link: "/supper/工程化/1工程化基础" },
+            { text: "webpack的配置", link: "/supper/工程化/2webpack的配置" },
+            { text: "自动化脚本", link: "/supper/工程化/3关于一些自动化脚本" },
+            { text: "docker 部署实操", link: "/supper/工程化/4docker 部署实操" },
+            { text: "patch-package", link: "/supper/工程化/5给包打补丁" },
+            { text: "gitee流水线", link: "/supper/工程化/6gitee流水线" },
+           
+          ],
+        },
+        {
+          text: "工具基础",
+          collapsed: false,
+          items: [
+            { text: "Sourcetree的使用", link: "/supper/工具基础/1Sourcetree的使用" },
+            { text: "用gitee连接ssh,linux服务器", link: "/supper/工具基础/2用gitee连接ssh,linux服务器" },
+            { text: "github图床", link: "/supper/工具基础/3github图床" },
+            { text: "git的基本使用", link: "/supper/工具基础/4git的基本使用" },
+            { text: "ps切图", link: "/supper/工具基础/5ps切图" },
+            { text: "codepen", link: "/supper/工具基础/6codepen" },
+            { text: "icon实操 | svg原理", link: "/supper/工具基础/7Icon实操" },
+            { text: "GraphQl", link: "/supper/工具基础/8GraphQl" },
+            { text: "快速mock", link: "/supper/工具基础/9快速mock" },
+            { text: "脚手架", link: "/supper/工具基础/10脚手架" },
+            { text: "figma", link: "/supper/工具基础/11figma" },
+            { text: "nvm", link: "/supper/工具基础/12nvm" },
+          ],
+        },
+        {
+          text: "个人封装",
+          collapsed: false,
+          items: [
+            { text: "个人封装", link: "/supper/个人封装/1个人发包模板" },
+            
+          ],
+        },
+        {
+          text: "前端库",
+          collapsed: false,
+          items: [
+            { text: "vueify", link: "/supper/前端库/1vueify" },
+            { text: "anime.js", link: "/supper/前端库/2anime.js" },
+            { text: "js-cookie", link: "/supper/前端库/3js-cookie" },
+          ],
+        },
+        {
+          text: "功能",
+          collapsed: false,
+          items: [
+            { text: "小功能汇总1", link: "/supper/功能/1小功能汇总" },
+            { text: "小功能汇总2", link: "/supper/功能/2小功能汇总" },
+            { text: "小功能汇总3", link: "/supper/功能/3小功能汇总" },
+            { text: "ffmpeg-rmtp监控", link: "/supper/功能/4ffmpeg-rmtp监控" },
+            { text: "微信支付", link: "/supper/功能/5微信支付" },
+            { text: "v-model组件封装", link: "/supper/功能/6v-model组件封装" },
+            { text: "深度学习实操", link: "/supper/功能/7深度学习实操" },
+            { text: "前端上传下载", link: "/supper/功能/8前端上传下载" },
+            { text: "监控停留时间", link: "/supper/功能/9监控停留时间" },
+            { text: "数据大屏自适应", link: "/supper/功能/10数据大屏自适应" },
+            { text: "拖拽元素", link: "/supper/功能/11拖拽元素" },
+            { text: "vue-element-admin", link: "/supper/功能/12vue-element-admin" },
+     
+          ],
+        },
+      ],
     },
   },
   // srcExclude: '../../know',

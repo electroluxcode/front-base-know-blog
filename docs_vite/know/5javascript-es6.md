@@ -902,3 +902,823 @@ Generator
  })
 ```
 
+#  1.js高级（红宝书）
+
+
+
+## 1.0 js一些简单概念
+
+```
+1.  0.1+0.2！= 0.3原因IEEE 754的双精度标准（二进制）
+解决方法：es6中，abs相减小于这个值那么就可以认为是相等的
+Math.abs(a-b)<Number.EPSILON;
+
+2.  nan是number的特殊类型。不等于任何值，即使nan==nan返回值也是一个false，判断是否nan要调用isnan（）原理是会尝试转化number类型，能转化的返回true，否则返回false
+
+
+3.  6个简单数据类型:undefined number string boolean symbol  null。
+
+number 0 nan是false值
+string是0是false值。
+object是null那么就是空值
+
+4.   object是一个复杂对象，null用typeof的返回值会是一个object。function用typeof会返回一个function的string（自己试验过）
+
+5.  defer延迟加载 async 异步加载 一般先搞html再加载js
+6.  var 变量提升。只有声明没有赋值
+
+8.  暂时性死区:let const没有声明变量却引入。实例化到被创造的过程。因为只要有let const就会优先实例化。根本原因:变量的生命先于使用。（块级作用域）。在我们import引入css也会报这个错
+
+var会变成window的值。
+
+typeof和instanceof的区别是：typeof的返回用来说明变量的数据类型（但是array，null等复杂对象一律返回object）；instanceof的返回值是布尔值，用于判断一个变量是否属于某个对象的实例。
+
+const只保证变量名指向的地址不变，并不保证该地址的数据不变，所以将一个复合类型的变量声明为常量必须非常小心。
+例如以下：
+const arr = [];
+// 报错，[1,2,3]与[]不是同一个地址
+arr = [1,2,3];
+const arr = [];
+// 不报错，变量名arr指向的地址不变，只是数据改变
+arr[0] = 1;
+
+
+<link rel="stylesheet"type="text/css"href="1.css"/>
+script src
+noscript标签：不能显示javascript显示的
+严格模式：有一些ecma script3的语法使用不了
+分号:某些情况能够提高性能，一些浏览器会自动补全。而且方便删除空行来压缩代码
+
+
+
+
+正向代理代理的对象是客户端 ，反向代理代理的对象是服务端 分发请求
+
+假如每一个 item 的图片的宽高相等，但图片下方的标题可能一行，可能多行，如何做瀑布流？
+解决：div不设置高度，由内容撑开
+
+这里history的这种模式需要后台配置支持。比如：（解决跨域）、history模式、多入口 naigx
+1.hash通过监听浏览器的onhashchange()事件变化（监听location的hash值），查找对应的路由规则。不会有历史记录
+2.history原理： 利用H5的 history中新增的两个API pushState() 和 replaceState() 和一个事件onpopstate监听URL变化。
+当我们进行项目的主页的时候，一切正常，可以访问，但是当我们刷新页面或者直接访问路径的时候就会返回404，那是因为在history模式下，只是动态的通过js操作window.history来改变浏览器地址栏里的路径，并没有发起http请求，但是当我直接在浏览器里输入这个地址的时候，就一定要对服务器发起http请求
+
+
+
+
+array会重写自己的object方法。
+讲的很详细，但是没有讲Object.prototype.toString的内部实现，应该说一下会对非null 或 undefined的数据类型进行装箱操作，然后去找出对象的 【Symbol.toStringTag】 属性值，还有可能要遍历原型链，取到的值作为 tag, 然后返回 "【object " + tag + "】" 形式的字符串
+
+
+a++还是++a:前者先引用接下来操作值。后者相反
+
+
+
+watch和computed源码都是基于Reactive Effect这个类，通过getter与setter更新数据视图。
+watch只能监听一个。因为第一个传参丢给getter，track只收集了这个参数。
+而computed传给getter，会把里面所有参数全部track收集，这里面scheduler调度器也是核心
+
+es6新增字符串语法 
+1.模板自变量，反向单引号
+2.模板自变量差值。反响单引号＋括号${}
+
+... :剩余操作符统一拿取
+
+对象object的语法：
+1.通过new创造出来
+2.默认有一个constructor
+3.hasownproperty，判断是否有这个属性
+4.tostring
+5.symbol（符号描述）:入参是描述值.读取这个参数要用tostring方法或者es2019的description方法，这个值不是基本类型也不是引用类型。这玩意可以用来做key，因为object不会冲突
+
+判断类型时array和null不能用typeof来判断，null用===来判断，array可以用es6的isarray来判断
+
+
+-infinty和infinty的typeof也是number
+
+
+
+```
+
+
+
+```
+1.  v8 的sort 是插入和快排（length小于10是插入，大于10是快排）。 现在一般是冒泡
+2.v8 是 Ecmascript+ WebAssembly   WebAssembly的最基本用例就是被开发者用来编写浏览器内的软件。
+```
+
+
+
+
+
+
+
+
+
+## 1.1 js遍历
+
+ECMA（语法）+dom（文档对象模型 p titile h1）和bom（浏览器对象模型 控制浏览器前进后退屏幕大小-其实bom包括了dom）
+
+
+
+```js
+        // 小知识点 如果function 没有return，那么如果console.log默认就是undefine
+
+        //1.1使用let in来进行声明可以避免污染外部变量
+        //由于属性 key 是字符串，迭代出的元素索引是 string,不是 number，不能直接进行运算，如下
+        //类似于Object.keys()，遍历对象的key
+        var arr = [1, 2, 3]
+        for (let index in arr) {
+            let res = index + 1
+            // console.log(res) //输出11 21 31
+        }
+
+
+        //1.2使用let of来遍历数/数组对象/字符串/map/set等拥有迭代器对象（iterator）的集合
+        var arr = [1, 2, 3]
+        for (let index of arr) {
+            let res = index + 1
+            // console.log(res) //输出2 3 4
+        }
+
+		
+        //1.3遍历object 示例
+		var myObject={"name":"zengpei","age":12}
+        for (var key of Object.keys(myObject)) {
+            console.log(key + ": " + myObject[key]);
+         }
+		
+		//1.4 遍历奇怪的东西
+		const valueSymbols = [{"med":1000},{"test":900}]
+        for ((i) in (valueSymbols)){
+          console.log(i)  //输出0,1
+        }
+        for ((i) of (valueSymbols)){
+          console.log(i) // 输出 {med: 1000} {test: 900}
+        }
+		for ((i) of (valueSymbols)){
+          console.log(i[Object.keys(i)]) // 输出 1000  900
+        }
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+## 1.2 正则表达式
+
+```js
+// 正则表达式
+        function getQueryObject(url) {
+            //假如不传值，默认也会有值
+            url = url == null ? window.location.href : url
+            //这一套组合技就是取到最后？后面的值
+            // url.lastIndexOf('?')找到位置
+            const search = url.substring(url.lastIndexOf('?') + 1)
+            const obj = {}
+            // 3.1 正则表达式 基本形式 /正则表达式主体/修饰符(可选)
+            // i 大小不那啥  g 全局匹配 不会在匹配一个后就停止
+            // JavaScript 中，正则表达式通常用于两个字符串方法 : 
+            // search()-并返回子串的起始位置 和 replace()-替换 和 exec也常用
+            const reg = /([^?&=]+)=/g
+
+            // 先行断言 后行：后面的内容应匹配表达式 exp
+            var reg1 = /(?=三).*(?=b)/
+            console.log('123一二三abc'.match(reg1))
+            // 返回三a
+
+            console.log(reg1.exec(search))
+            // reg.exec(search,(rs, $1, $2) => {
+            //         console.log($1, "$1")
+            //         console.log($2, "$2")
+            //         console.log(rs, "rs")
+            //         const name = decodeURIComponent($1)
+            //         let val = decodeURIComponent($2)
+            //         val = String(val)
+            //         obj[name] = val
+            //         return rs
+            // })
+
+            //这样子写可以得到第一个参数匹配的内容
+            // replace的第一个参数是正则表达式，第二个参数有两种形式，第一种是string，那就是替换了
+            // 第二种就是传入函数，rs是匹配的内容，$1是第一个括号匹配的内容，$2是第二个括号匹配的内容
+            // 如果除了这两个参数外还有的话，那么就是offset（匹配到的索引）,str（原始字符串）
+            // reg是正则表达式，传入
+            search.replace(reg, (rs, $1, $2) => {
+                console.log($1, "$1")
+                console.log($2, "$2")
+
+                const name = decodeURIComponent($1)
+                let val = decodeURIComponent($2)
+                val = String(val)
+                obj[name] = val
+                return rs
+            })
+
+            return obj
+        }
+		console.log("window.location", getQueryObject())
+```
+
+
+
+
+
+## 1.3 传参的新方法
+
+```js
+//4.传参function的新方法
+        // 这里的param是必须传的，之前必须要定义好
+        // d e 作为形参传入参数
+        param="param"
+        var a = (param,(d,e) => { 
+                console.log(d,"d")
+                console.log(e,"e")
+                return (param + 1) 
+            }
+        )
+注意：这个跟上面的是replace不一样，这里的param,d,e 全部都是作为参数进行使用的。
+replace本身就是传入两个参数
+  
+
+```
+
+
+
+## 1.4 bom对象
+
+
+
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body style="height: 1900px;">
+
+    <script>
+        
+
+        // 2.1 bom对象
+
+        // 2.1.1 有趣的窗口
+        // window.alert("这是弹出的窗口")
+        // window.confirm("这是确认的窗口") //这里会返回一个boolen值，我们可以根据这个做事情
+        // window.prompt("这是窗口输入框")  //这里会返回你输入的值，我们可以根据这个做事情
+        
+        // 2.1.2 window宽高属性
+        // console.log("innerHeight", window.innerHeight)  //高
+        // console.log("innerWidth", window.innerWidth)    //宽
+        // console.log("window.location", window.location)  //路由地址端口号之类的东西
+        // console.log("window.Navigator", window.navigator) //得到运行平台的相关信息
+
+        // 2.1.3 路由操作和
+        // window.open('https://www.jb51.net/article/132323.htm') //打开某一个网页
+        // window.history.back() //返回前一个界面
+        // window.history.forward() //去往下一个界面
+
+
+        //2.1.4 一些窗口之类的操作
+        //window.scrollTo(0,500); x，y
+        // window.scroll(0,500);第一个和第二个是移动到指定的位置。
+        //window.scrollBy(0,500);  这个是向下移动500个px
+        // alert("pageXOffset: " + window.pageXOffset + ", pageYOffset: " + window.pageYOffset);
+        // setInterval(()=>{
+        //     window.scrollBy(0,50);
+        //     console.log(window.pageXOffset,"window.pageXOffset") //返回滚动
+        //     console.log(window.pageYOffset,"window.pageYOffset")
+        // },1000)
+        //const w=window.open("https://blog.csdn.net/weixin_44597002/article/details/126346747");
+        //w.resizeTo(500,500); //当一个窗口里面含有一个以上的 Tab 时，无法设置窗口的大小。
+        
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
+```
+
+
+
+
+
+## 1.5 迭代器对象
+
+
+
+
+
+## 2.6生成器对象
+
+```js
+生成器。函数前面加一个*
+类似于 function *a（）{
+  return xxx
+}
+a.next()  会输出 {value:xxx，done:true}
+生成器中使用yield代替renturn 作为高阶的函数
+适用于
+function *a（）{
+  return xxx
+return  ccc
+}这样子返回不了ccc
+function *a（）{
+  yield xxx
+yield   ccc
+}
+
+当执行到yield的时候，会返回值并且上下文会被保留。在第二次next的时候就能返回ccc。async await也是用这个实现的
+调用起来当做数组一样  for （let param of a ）{
+		console.log(param)
+}
+
+```
+
+
+
+
+
+## 1.7 在node使用esm语法
+
+一般来说我们在node xxxx.js 的时候只能使用cjs语法，也就是说只能使用
+
+```js
+module.exports ={test,varible};  
+const xx = require("xxxx.js")
+```
+
+这样的语法
+
+如果我们想用
+
+```js
+export {test}
+import {test} from './es6.js'
+test()
+
+会报错类似于 
+syntaxError: Cannot use import statement outside a module
+```
+
+前提：**Node V13.2.0**以上才能用下面的方法
+
+我们可以在文件下面新建package.json
+
+```json
+{
+    "name": "leetcode",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+  }
+
+```
+
+
+
+这样就可以了
+
+## 1.8监听劫持console事件
+
+```js
+// import BaseMonitor from "../base/baseMonitor.js";
+// import { ErrorCategoryEnum,ErrorLevelEnum } from "../base/baseConfig.js"
+/**
+ * console.error异常
+ */
+class ConsoleError  {
+    
+    constructor(params){
+        // super(params);获取父级的消息
+        console.warn("参数是："+JSON.stringify(params))
+    }
+
+    /**
+     * 处理console事件
+     */
+    handleError(){
+        this.registerInfo();
+
+    }
+
+    /**
+     * 处理信息
+     */
+    registerInfo(){
+        let t = this;
+        console.log=function(){
+            // t.handleLog(ErrorLevelEnum.INFO,ErrorCategoryEnum.CONSOLE_INFO,arguments);
+            t.handleLog("info","console_info",arguments);
+        }
+    }
+
+
+    /**
+     * 处理日志
+     */
+    handleLog(level,category,args){
+        try {
+            this.level = level;
+            let params = [...args];
+            this.msg = params.join("\r\n"); //换行符分割
+            // this.url = location.href;   //当前地址
+            this.category = category;
+            let temp ={
+                level:this.level,
+                params:params,
+                msg:this.msg,
+                category:category
+            }
+            console.warn("处理info数据：",temp)
+        } catch (error) {
+            console.log("console统计错误异常",level,error);
+        }
+    }
+
+}
+
+/**
+ * 初始化console事件
+ */
+(function(){  
+    //创建空console对象，避免JS报错  
+    if(!window.console){
+        window.console = {};
+    }
+    let funcs = ['log','tWarn','tError'];
+    //这里劫持 console.log console.tWarn tError数据
+    funcs.forEach((func,index)=>{
+        if(!console[func]){
+            console[func] = function(){};
+        }
+    });
+})()
+
+new ConsoleError({
+    "test":"12"
+}).handleError()
+console.log("测试数据")
+export default ConsoleError;
+```
+
+
+
+
+
+## 1.9 手写 promise
+
+```js
+const resolvePromise = (promise2, x, resolve, reject) => {
+    // 自己等待自己完成是错误的实现，用一个类型错误，结束掉 promise  Promise/A+ 2.3.1
+    if (promise2 === x) { 
+      return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+    }
+    // Promise/A+ 2.3.3.3.3 只能调用一次
+    let called;
+    // 后续的条件要严格判断 保证代码能和别的库一起使用
+    if ((typeof x === 'object' && x != null) || typeof x === 'function') { 
+      try {
+        // 为了判断 resolve 过的就不用再 reject 了（比如 reject 和 resolve 同时调用的时候）  Promise/A+ 2.3.3.1
+        let then = x.then;
+        if (typeof then === 'function') { 
+          // 不要写成 x.then，直接 then.call 就可以了 因为 x.then 会再次取值，Object.defineProperty  Promise/A+ 2.3.3.3
+          then.call(x, y => { // 根据 promise 的状态决定是成功还是失败
+            if (called) return;
+            called = true;
+            // 递归解析的过程（因为可能 promise 中还有 promise） Promise/A+ 2.3.3.3.1
+            resolvePromise(promise2, y, resolve, reject); 
+          }, r => {
+            // 只要失败就失败 Promise/A+ 2.3.3.3.2
+            if (called) return;
+            called = true;
+            reject(r);
+          });
+        } else {
+          // 如果 x.then 是个普通值就直接返回 resolve 作为结果  Promise/A+ 2.3.3.4
+          resolve(x);
+        }
+      } catch (e) {
+        // Promise/A+ 2.3.3.2
+        if (called) return;
+        called = true;
+        reject(e)
+      }
+    } else {
+      // 如果 x 是个普通值就直接返回 resolve 作为结果  Promise/A+ 2.3.4  
+      resolve(x)
+    }
+  }
+
+// 三个状态：PENDING、FULFILLED、REJECTED
+class Promise1 {
+    constructor(executor) {
+        this.status = 'PENDING';// 默认状态为 'PENDING'
+        this.value = undefined;// 存放成功状态的值
+        this.reason = undefined;// 存放失败状态的值
+
+        //step0:下面这两个为了解决异步不生效问题
+        this.onResolvedCallbacks = [];// 存放成功的回调 
+        this.onRejectedCallbacks = []; // 存放失败的回调 
+
+        // step1:定义resolve和reject方法（初始化中）
+        // 给函数变量赋值就可以了
+        let resolve = (value) => {
+            // 状态为 'PENDING' 时才可以更新状态，防止 executor 中调用了两次 resolve/reject 方法
+            console.log("resolve里面的resolve：" + this.status + "   value的值：" + value)
+            if (this.status === 'PENDING') {
+                this.status = 'FULFILLED';
+                this.value = value;
+                this.onResolvedCallbacks.forEach(fn => fn());
+            }
+        }
+        let reject = (reason) => {
+            // 状态为 'PENDING' 时才可以更新状态，防止 executor 中调用了两次 resolve/reject 方法
+            if (this.status === 'PENDING') {
+                this.status = 'REJECTED';
+                this.reason = reason;
+                this.onRejectedCallbacks.forEach(fn => fn());
+            }
+        }
+
+        try {
+            // step2：调用promise，立即执行两个形参（初始化中）
+            // 这里的executor一般来说实际上就是 es6 的箭头函数()，这玩意也是一个函数，传参传的就是函数
+            // 但是函数里面的形参是在promise对象里面定义的，这点还是挺罕见的。这就代表 resolve, reject我们只用赋值就可以了
+            // 注意，如果这里是异步，在我们new resolve方法的时候，异步方法就开始执行，我们如果隔久一点调用then，是已经执行完的状态。
+            // 因此 这里是一个reason的赋值，和执行。
+            // 只有resolve进来后才能调用这个方法，executor(resolve('成功222222222222222'), reject) ;
+            executor(resolve, reject)
+        } catch (error) {
+            // 发生异常时执行失败逻辑
+            reject(error)
+        }
+    }
+
+    // step3：then也是传入两个方法就可以了，一个是成功的箭头函数 一个是错误的箭头函数 
+    then(onFulfilled, onRejected) {
+        //重要：同步这里会直接执行，但是异步不会
+        // if (this.status === 'FULFILLED') {
+        //     onFulfilled(this.value);
+        //     
+        // }
+        // if (this.status === 'REJECTED') {
+        //     onRejected(this.reason)
+        // }
+        // // 解决then里面的值拿不到
+        // if (this.status === 'PENDING') {
+        //     // 如果promise的状态是 pending，需要将 onFulfilled 和 onRejected 函数存放起来进集合里面。
+        //     //因为是在之后异步执行，然后集合里会早就有这些元素
+        //     // 等待状态确定后，再依次将对应的函数执行
+        //     this.onResolvedCallbacks.push(() => {
+        //         onFulfilled(this.value)
+        //     });
+        //     this.onRejectedCallbacks.push(() => {
+        //         onRejected(this.reason);
+        //     })
+        // }
+        let promise2 = new Promise((resolve, reject) => {
+            if (this.status === "FULFILLED") {
+              //Promise/A+ 2.2.2
+              //Promise/A+ 2.2.4 --- setTimeout
+              setTimeout(() => {
+                try {
+                  //Promise/A+ 2.2.7.1
+                  let x = onFulfilled(this.value);
+                  // x可能是一个proimise
+                  resolvePromise(promise2, x, resolve, reject);
+                } catch (e) {
+                  //Promise/A+ 2.2.7.2
+                  reject(e)
+                }
+              }, 0);
+            }
+      
+            if (this.status === "REJECTED") {
+              //Promise/A+ 2.2.3
+              setTimeout(() => {
+                try {
+                  let x = onRejected(this.reason);
+                  resolvePromise(promise2, x, resolve, reject);
+                } catch (e) {
+                  reject(e)
+                }
+              }, 0);
+            }
+      
+            if (this.status === "PENDING") {
+              this.onResolvedCallbacks.push(() => {
+                setTimeout(() => {
+                  try {
+                    let x = onFulfilled(this.value);
+                    resolvePromise(promise2, x, resolve, reject);
+                  } catch (e) {
+                    reject(e)
+                  }
+                }, 0);
+              });
+      
+              this.onRejectedCallbacks.push(()=> {
+                setTimeout(() => {
+                  try {
+                    let x = onRejected(this.reason);
+                    resolvePromise(promise2, x, resolve, reject)
+                  } catch (e) {
+                    reject(e)
+                  }
+                }, 0);
+              });
+            }
+          });
+      
+          return promise2;
+        
+    }
+}
+
+//resolve在这里算是代理者模式和一种别的的订阅模式
+// executor是一个方法（构造器里面的方法，理解到这一点的我真是吐了），通过resolve的参数是包在同步还是异步来进行调用
+const promise = new Promise1((resolve, reject) => {
+    setTimeout(() => {
+        //只要new这里就会执行
+        resolve('成功222222222222222');
+    }, 2000);
+})
+promise.then((data) => {
+    //如果不用订阅者那一套，连着写不能输出
+    console.log("一次调用："+data)
+    return('success'+data)
+}
+).then((res)=>{
+    console.log("二次调用："+res)
+})
+
+
+//总结：难点主要有两个  第一个是异步（这个用发布者订阅者模式可以做到）
+// 第二个是then 值穿透 和 链式调用（这个主要用递归）
+```
+
+
+
+## 1.10 拿到console.log示例
+
+```js
+ class ConsoleError  {
+    
+    constructor(params){
+        // super(params);获取父级的消息
+        console.warn("参数是："+JSON.stringify(params))
+    }
+
+    /**
+     * 处理console事件
+     */
+    handleError(){
+        this.registerInfo();
+
+    }
+
+    /**
+     * 处理信息
+     */
+    registerInfo(){
+        let t = this;
+        console.log=function(){
+            // t.handleLog(ErrorLevelEnum.INFO,ErrorCategoryEnum.CONSOLE_INFO,arguments);
+            t.handleLog("info","console_info",arguments);
+        }
+    }
+
+
+    /**
+     * 处理日志
+     */
+    handleLog(level,category,args){
+        try {
+            this.level = level;
+            let params = [...args];
+            this.msg = params.join("\r\n"); //换行符分割
+            // this.url = location.href;   //当前地址
+            this.category = category;
+            let temp ={
+                level:this.level,
+                params:params,
+                msg:this.msg,
+                category:category
+            }
+            console.warn("处理info数据：",temp)
+        } catch (error) {
+            console.log("console统计错误异常",level,error);
+        }
+    }
+
+}
+
+/**
+ * 初始化console事件
+ */
+(function(){  
+    //创建空console对象，避免JS报错  
+    if(!window.console){
+        window.console = {};
+    }
+    let funcs = ['log','tWarn','tError'];
+    //这里劫持 console.log console.tWarn tError数据
+    funcs.forEach((func,index)=>{
+        if(!console[func]){
+            console[func] = function(){};
+        }
+    });
+})()
+//试验
+new ConsoleError({
+    "test":"12"
+}).handleError()
+console.log("测试数据")
+
+
+
+
+```
+
+
+
+
+
+
+
+## 1.11 Generator（生成器对象）
+
+
+
+是一种异步的解决方案。
+
+```
+generator是一种特殊的iterator，generator可以替代iterator实现，使代码更为简洁
+
+
+迭代器对象需要符合迭代器协议是调用对象的next方法：必须有 next() 方法。每调用next方法返回一个包含value 和 done 属性的对象。指针一直向后面移动
+
+可迭代对象需要实现迭代器协议：Interable
+
+
+生成器是
+一是，function关键字与函数名之间有一个星号；
+二是，函数体内部使用yield表达式，定义不同的内部状态（yield在英语里的意思就是“产出”）yield只能在Generator函数里面使用
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
