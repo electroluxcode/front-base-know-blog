@@ -10,7 +10,7 @@ export default defineConfig({
   cleanUrls: true,
   lang: "en-US",
   description: "hello world",
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/sword.svg" }]],
+  head: [["link", { rel: "icon", type: "image/svg+xml", href: "https://cdn.jsdelivr.net/npm/electroluxasset@1.0.8/image/svg/book.svg" }]],
   lastUpdated: true,
   themeConfig: {
     outlineTitle: "目录",

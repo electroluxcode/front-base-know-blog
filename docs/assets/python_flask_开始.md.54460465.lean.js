@@ -1,0 +1,1 @@
+import{_ as t,o as e,c as a}from"./chunks/framework.408c4d71.js";const l=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"python/flask/开始.md","filePath":"python/flask/开始.md","lastUpdated":1684758476000}'),o={name:"python/flask/开始.md"};function s(n,r,c,p,_,d){return e(),a("div")}const i=t(o,[["render",s]]);export{l as __pageData,i as default};
