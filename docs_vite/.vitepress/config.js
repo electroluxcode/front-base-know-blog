@@ -16,7 +16,7 @@ export default defineConfig({
     outlineTitle: "目录",
     // lastUpdatedText: 'Updated Date',
     i18nRouting: true,
-    logo: "/front-base-know-blog/logo.svg",
+    logo: "https://cdn.jsdelivr.net/npm/electroluxasset@1.0.8/image/svg/book.svg",
     nav: [
       { text: "首页", link: "/" },
       { text: "前端基础", link: "/know/1html" },
