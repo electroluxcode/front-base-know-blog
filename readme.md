@@ -1,4 +1,7 @@
-个人前端知识点博客：用来面试用的
+个人前端知识点博客：
+
+
+npx pagefind --source ./docs_vite
 
 style={{background:'red'}} 类似于这种不能直接写进入不然会报错
 
