@@ -248,6 +248,54 @@ git pull origin master --allow-unrelated-histories
 
 
 
+## 4.9 项目常用
+
+
+
+### 4.9.1  当开发的时候主分支有新东西要合并进来
+
+我当前开发的分支再zp_dev,leader的主分支在dev。主分支有新东西要合并进来
+
+```shell
+git pull origin dev 有问题 显示 Please commit your changes or stash them before you merge.然后
+
+git stash 
+git checkout dev
+git pull origin dev # 拉到现在的dev分支
+git checkout zp_dev
+git stash pop
+git stash # 安全
+git rebase dev # 接着本地解决冲突，accept 更改，拉取共有的东西
+```
+
+
+
+### 4.9.2 dev 没有 pull  到最新 然后进行开发
+
+```shell
+# 本地的有冲突
+git checkout dev
+git branch -d dev 
+git pull origin dev   
+git reset xx 或者 git checkout zp_dev
+git rebase dev  # 解决冲突 此时 Git 会将 zp_dev 分支下最新提交的代码提取出来，将 dev 分支最新的代码应用到这个提交上，然后将结果提交到 zp_dev 分支上。如果有冲突需要解决，解决冲突后再使用 git add 命令添加修改，使用 git rebase --continue 命令继续执行合并操作。如果合并过程中发生问题导致代码出现错误，可以使用 git rebase --abort 命令撤销合并操作，并恢复到合并前的状态。
+
+# 5.当合并完成后，将合并结果推送到远程仓库：
+
+git push origin zp_dev
+
+```
+
+
+
+
+
+
+
+
+
+
+
 ## 常见bug
 
 ### error: remote origin already exists

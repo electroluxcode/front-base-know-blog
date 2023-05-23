@@ -35,18 +35,20 @@ export default defineConfig({
           text: "前端基础",
           collapsed: false,
           items: [
-            { text: "html(浏览器)", link: "/know/1html" },
-            { text: "js基础(1)", link: "/know/2javascript基础" },
-            { text: "js基础(2)", link: "/know/3javascript基础" },
-            { text: "js基础(3) | 手写题", link: "/know/4javascript手写题" },
+            { text: "html(浏览器)", link: "/know/know/1html" },
+            { text: "js基础(1)", link: "/know/know/2javascript基础" },
+            { text: "js基础(2)", link: "/know/know/3javascript基础" },
+            { text: "js基础(3) | 手写题", link: "/know/know/4javascript手写题" },
             {
               text: "js基础(3) | 代码输出",
-              link: "/know/4javascript代码输出题",
+              link: "/know/know/4javascript代码输出题",
             },
-            { text: "js基础(4) | es6", link: "/know/5javascript-es6" },
-            { text: "TypeScript", link: "/know/6ts" },
-            { text: "CSS", link: "/know/7css" },
-            { text: "BUG", link: "/know/8bug" },
+            { text: "js基础(4) | es6", link: "/know/know/5javascript-es6" },
+            { text: "js基础(5)", link: "/know/know/9javascript基础" },
+            { text: "TypeScript", link: "/know/know/6ts" },
+            { text: "CSS", link: "/know/know/7css" },
+            { text: "BUG", link: "/know/know/8bug" },
+
           ],
         },
         {
@@ -114,10 +116,10 @@ export default defineConfig({
           text: "代码高级",
           collapsed: false,
           items: [
-            { text: "代码优化 | 设计模式", link: "/supper/1代码优化" },
-            { text: "设计模式与js", link: "/supper/2实用算法" },
-            { text: "性能优化", link: "/supper/3性能优化" },
-            { text: "UI设计", link: "/supper/4UI设计" },
+            { text: "代码优化 | 设计模式", link: "/supper/supper/1代码优化" },
+            { text: "设计模式与js", link: "/supper/supper/2实用算法" },
+            { text: "性能优化", link: "/supper/supper/3性能优化" },
+            { text: "UI设计", link: "/supper/supper/4UI设计" },
             // { text: "设计模式与js", link: "/supper/2设计模式与js" }
             // { text: "设计模式与js", link: "/supper/2设计模式与js" }
           ],
