@@ -2,6 +2,12 @@ import { defineConfig } from "vitepress";
 import { pagefindPlugin, chineseSearchOptimize } from "vitepress-plugin-pagefind";
 
 export default defineConfig({
+
+
+  // options for markdown-it-table-of-contents
+  toc: { includeLevel: [2,2,49] },
+  includeLevel:[1,9] ,
+   
   outDir: "../docs",
   // 相对路径打包
   // base: './',
@@ -19,9 +25,12 @@ export default defineConfig({
     logo: "https://cdn.jsdelivr.net/npm/electroluxasset@1.0.8/image/svg/book.svg",
     nav: [
       { text: "首页", link: "/" },
-      { text: "前端基础", link: "/know/1html" },
-      { text: "前端工程化", link: "/supper/1代码优化" },
+      { text: "前端基础", link: "/know/know/1html" },
+      { text: "前端工程化", link: "/supper/supper/1代码优化" },
       { text: "Python", link: "/python/flask.md" },
+      { text: "Java", link: "/java/java.md" },
+      { text: "项目", link: "/project/javadump分析.md" },
+      
     ],
     socialLinks: [{ icon: "github", link: "https://gitee.com/Electrolux" }],
     footer: {
@@ -79,6 +88,9 @@ export default defineConfig({
             { text: "shell", link: "/know/框架/9shell" },
             { text: "aframe", link: "/know/框架/10aframe" },
             { text: "逆向数据crawl", link: "/know/框架/11逆向数据crawl" },
+            { text: "threejs", link: "/know/框架/12threejs" },
+            { text: "13electron", link: "/know/框架/13electron" },
+            { text: "逆向数据crawl", link: "/know/框架/11逆向数据crawl" },
           ],
         },
         {
@@ -95,6 +107,8 @@ export default defineConfig({
             { text: "tensorFlow", link: "/know/优化/7tensorFlow" },
           ],
         },
+
+        
         // {
         //   text: '反馈',
         //   items: [
@@ -105,11 +119,25 @@ export default defineConfig({
         //   ]
         // }
       ],
+      "/java/": [{
+        text: "java",
+          collapsed: false,
+          items: [
+            { text: "jvm", link: "/java/java" },
+            { text: "springboot", link: "/java/base" },
+      ]}],
       "/python/": [{
         text: "python 基础",
           collapsed: false,
           items: [
             { text: "服务器", link: "/python/flask" },
+      ]}],
+
+      "/project/": [{
+        text: "项目文档",
+          collapsed: false,
+          items: [
+            { text: "java dump", link: "/project/javadump分析" },
       ]}],
       "/supper/": [
         {
