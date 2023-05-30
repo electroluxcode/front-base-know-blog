@@ -181,6 +181,7 @@ export default defineConfig({
             { text: "脚手架", link: "/supper/工具基础/10脚手架" },
             { text: "figma", link: "/supper/工具基础/11figma" },
             { text: "nvm", link: "/supper/工具基础/12nvm" },
+            { text: "苹果", link: "/supper/工具基础/13mac的使用" },
           ],
         },
         {

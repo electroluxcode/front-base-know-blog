@@ -2823,6 +2823,165 @@ export default (props: any) => {
 
 
 
+### 2.8.5 性能优化 ｜ 引入配置
+
+```js
+import { defineConfig } from '@umijs/max';
+
+
+var proEnv = require('./config/production.env'); // 生产环境
+var testEnv = require('./config/test.env'); // 测试环境
+var devEnv = require('./config/development.env'); // 本地环境
+
+
+const env = process.env.ENV;//当前环境
+let URL_COMMON = '';//路径
+let URL_RESOURCE = '';//路径
+
+// 默认是本地环境
+if (env === 'production') { // 生产环境
+    console.log("----------生产环境----------");
+    URL_COMMON = proEnv.URL_COMMON;
+    URL_RESOURCE = proEnv.URL_RESOURCE
+} else if (env === 'test') { // 测试环境
+    console.log("----------测试环境----------");
+    URL_COMMON = testEnv.URL_COMMON;
+    URL_RESOURCE = testEnv.URL_RESOURCE
+} else if( env ==='development') { // 开发环境
+    console.log("----------开发环境----------");
+    URL_COMMON = devEnv.URL_COMMON;
+    URL_RESOURCE = devEnv.URL_RESOURCE
+}
+
+
+// 配置 构建加速
+
+
+
+export default defineConfig({
+  // mfsu:{
+  //   strategy:"normal",
+  //   esbuild: true
+  // },
+  // alias:{
+  //   "@@":"./public"
+  // },
+  // analyze: {
+  //   analyzerMode: 'server',
+  //   analyzerPort: 8888,
+  //   openAnalyzer: true,
+  //   // generate stats file while ANALYZE_DUMP exist
+  //   generateStatsFile:true,
+  //   statsFilename: 'stats.json',
+  //   logLevel: 'info',
+  //   defaultSizes: 'parsed', // stat  // gzip
+  // },
+  // codeSplitting: {
+  //   jsStrategy: 'bigVendors' //bigVendors" | "depPerChunk" | "granularChunks"
+  // },
+  // cssMinifier: 'esbuild',
+  //   cssMinifierOptions: {
+  //     minifyWhitespace: true,
+  //     minifySyntax: true,
+  //   },
+  // autoprefixer:{
+  //    chrome: 80 
+  // },
+  // devtool: process.env.ENV === 'production' ? false : 'eval',
+  // jsMinifier: 'esbuild',
+  // jsMinifierOptions: {
+  //   minifyWhitespace: true,
+  //   minifyIdentifiers: true,
+  //   minifySyntax: true,
+  // },
+  chainWebpack (config) {
+      // console.log(config)
+  },
+  base: '/admin/',
+  publicPath: '/admin/',
+  hash: true,
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: {
+    title: 'CVTE虚拟人管理后台',
+    locale: false
+  },
+  routes: [
+    {
+      path: '/',
+      redirect: '/background',
+    },
+    {
+      path: '/login',
+      component: './Login',
+      menuRender: false,
+      menuHeaderRender: false,
+      wrappers:["@/wrappers/auth"],
+    },
+    {
+      name: '背景管理',
+      path: '/background',
+      component: './BgManage',
+      wrappers:["@/wrappers/auth"],
+    },
+    {
+      name: '模型管理',
+      path: '/model',
+      component: './ModelManage',
+      wrappers:["@/wrappers/auth"],
+    },
+    {
+      name: '证书管理',
+      path: '/cert',
+      component: './CertManage',
+      wrappers:["@/wrappers/auth"],
+    },
+    {
+      name: '用户管理',
+      path: '/user',
+      component: './UserManage',
+      wrappers:["@/wrappers/auth"],
+    },
+    {
+      // name: '错误页',
+      path: '/*',
+      component: './Error',
+      menuRender: false,
+      menuHeaderRender: false,
+      layout: false
+      // wrappers:["@/wrappers/auth"],
+    },
+    // {
+    //   name: 'xx管理',
+    //   path: '/test',
+    //   component: './Table',
+    //   wrappers:["@/wrappers/auth"],
+    // },
+  ],
+  npmClient: 'npm',
+  proxy: {
+    '/api': {
+      target: URL_COMMON,
+      // target: 'http://dev-proxy.test.imlizhi.com/',
+      // target: 'https://virtualhuman.cvte.com/',
+      changeOrigin: true,
+      // pathRewrite: { '^/api': '' },
+    },
+    '/resource': {
+      target: URL_RESOURCE,
+      // target: 'http://dev-proxy.test.imlizhi.com/',
+      // target: 'https://virtualhuman.cvte.com/',
+      changeOrigin: true,
+      // pathRewrite: { '^/api/resource': '/api/resource' },
+    },
+  },
+});
+
+```
+
 
 
 

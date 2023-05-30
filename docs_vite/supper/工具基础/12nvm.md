@@ -37,6 +37,7 @@ nvm on 开启nvm
 
 nvm off 关闭nvm
 
+nvm alias default 16.18.0 // 设置默认版本号
 
 ```
 
