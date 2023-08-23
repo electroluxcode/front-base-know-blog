@@ -443,6 +443,29 @@ const count = computed(() => {
 
 
 
+### 5.0.10 ref 
+
+```
+step1 : 组件上面
+:ref="ganttContainer"
+
+step2 ： script 里面
+
+const ganttContainerRef = ref<any>(null);
+const ganttContainer = (el) => {
+  ganttContainerRef.value = el;
+};
+
+
+
+```
+
+
+
+
+
+
+
 
 
 ## 5.1 小技巧

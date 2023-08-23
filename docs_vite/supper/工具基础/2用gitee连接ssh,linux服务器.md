@@ -52,22 +52,21 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/K4FCP5okQiQD5YdQwvCCORSv9ZppsBcIA7qU/IX8
 
 ## 2.2 免密码登录linux 服务器 
 
-```shell
-ssh-keygen -t rsa 
-# 输入地址 和 两次 一样的密码 后 我是 6位mom birthday
-```
-
 
 
 
 
 ```shell
+服务器上面：
 ssh-keygen -t rsa 
 # 名字 不能输入别的 然后 密码 不设置密码。我真的服了，不能输入其他的东西
+
+然后本地上面
+
 ssh-copy-id  -p 222 root@10.21.2.47
 ssh root@10.21.2.47 -p 222
 
-
+接下来去到服务器
 
 chmod 700 /home/root
 

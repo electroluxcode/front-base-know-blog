@@ -385,7 +385,7 @@ const div = document.createElement('div')
 
 
 
-## 11.6 自己的npm 包
+## 11.6 全局脚手架  | npm 包
 
 
 
@@ -442,8 +442,6 @@ npm ls --global --depth 0 # 查看所有创建的全局链接名称
 
 
 
-
-
 ### 11.6.3 完整
 
 ```js
@@ -457,3 +455,503 @@ npm ls --global --depth 0 # 查看所有创建的全局链接名称
 
 
  
+
+
+
+## 11.7 个人 ui  | npm 包 | snippet
+
+
+
+跟上面的主要区别是 个人 ui  npm 包 对于 初始化 的 snippet 更加敏感。因此我们需要在 npm install 的 生命周期做文章。需要注意一下。这里的 process.cwd() 本来我以为 会 指向跟路径 但是 由于 执行得到 问题。 实际上 __dirname 和  process.cwd() 的 位置结果一样
+
+
+
+不同于 husky 的 源码，因为husky的源码实际上是在另一个地方执行。因此我们 如果 需要 找到 我们的 跟 路径 可以 向上 找到 package这个文件
+
+这是我做的最小示例
+
+
+
+
+
+### install.js
+
+这里的原理是 找到 package.json 的位置然后进行写入
+
+```js
+#!/usr/bin/env node
+
+const fs = require("fs");
+const execSync = require("child_process").execSync;
+const path = require("path");
+
+// execSync(`npm install eslint@7 -D`);
+
+function search(pathVar, num) {
+	if (num > 5) {
+		console.log("找不到package.json");
+		throw new Error("找不到package.json")
+	}
+	
+	let currentPath = path.resolve(pathVar);
+	console.error(`${currentPath}`)
+	// throw new Error("找不到package.json")
+	if (fs.existsSync(path.resolve(currentPath,"package.json"))) {
+		operate(currentPath)
+	} else {
+		search(path.resolve(currentPath,".."), ++num);
+	}
+}
+
+
+/**
+ * @des 搜索到 package.json 判断有没有vscode
+ * @param {*} currentPath 
+ * @returns 
+ */
+function operate(currentPath) {
+	console.log(currentPath)
+	if (fs.existsSync(path.resolve(currentPath, ".vscode"))) {
+		console.log(`.vscode存在 | 现在 进行写入`);
+		let originPath = path.resolve(__dirname, ".vscode", "ts.code-snippets");
+		// 这里 更改你的 文件名
+		let targetPath = path.resolve(
+			currentPath,
+			".vscode",
+			"你的项目.code-snippets"
+		);
+		fs.cp(originPath, targetPath, (err) => {
+			if (err) {
+				throw new Error(`${err}`);
+			}
+		});
+	} else {
+		console.log(`.vscode不存在 | 现在 进行写入`);
+		let originPath = path.resolve(__dirname, ".vscode");
+		let targetPath = path.resolve(currentPath,".vscode");
+		fs.cp(originPath, targetPath, { recursive: true }, (err) => {
+			if (err) {
+				throw new Error(`${err}`);
+			}
+		});
+	}
+	return 
+}
+search(path.resolve(".."),0)
+
+```
+
+
+
+
+
+### package.json
+
+
+
+这里面的 bin 字段改成 install.js 就可以了。然后 install 这个包的时候就会有智能提示
+
+
+
+
+
+
+
+
+
+### vscode
+
+
+
+
+
+
+
+## 11.8 个人 | npm | ts 智能提示
+
+ts json 添加上这些就可以了。"declaration":true, 可以 把 .d.ts 分离出来。然后 命令行 输入 tsc 就可以了  
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext", /* Specify what module code is generated. */
+    // "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    // "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
+    // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
+    // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
+    /* Interop Constraints */
+    // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
+    // "allowSyntheticDefaultImports": true,             /* Allow 'import x from y' when a module doesn't have a default export. */
+    "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
+    "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
+    "moduleResolution": "node",
+    /* Type Checking */
+    "strict": true, /* Enable all strict type-checking options. */
+    "noImplicitAny": true, /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+    // "suppressImplicitAnyIndexErrors":true,
+    "noImplicitThis": false,
+    "skipLibCheck": true, /* Skip type checking all .d.ts files. */
+    "declaration":true,
+    // "declarationDir": "dist",
+    "typeRoots": ["./types"]
+  }
+}
+```
+
+
+
+## 11.9 智能提示 html | vscode 插件
+
+
+
+### 11.9.1 安装
+
+```shell
+npm install -g yo generator-code
+```
+
+
+
+### 11.9.2 安装插件 
+
+```shell
+
+首先访问 login.live.com/ 登录你的Microsoft账号，没有的先注册一个，然后访问： https://dev.azure.com/，如果你从来没有使用过Azure，那么就要先创建一个Azure DevOps 组织，默认会创建一个以邮箱前缀为名的组织
+
+然后在 个人设置里面 点击 personal access token 
+
+注意里面的 organization 设置成 all ，然后 scopes 给一个 full access
+
+
+复制 key 下来 y5vwuqqfmipi37lrqf477px4qnh4ko73lcxif5xmcrv3jhr6wbua
+```
+
+
+
+### 11.9.3 package.json 里面 
+
+```shell
+{
+	"name": "webzen-ui-vscode",
+	"displayName": "webzen-ui-vscode",
+	"description": "webzen-ui 的 vscode snippet",
+	"version": "0.0.9",
+	"icon": "asset/icon.jpg",
+	"engines": {
+		"vscode": "^1.66.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "",
+		"directory": "src"
+	},
+	"categories": [
+		"Other"
+	],
+	"publisher": "Electrolux",
+	"activationEvents": [
+    "onLanguage:vue",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact"
+  ],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"commands": []
+	},
+	"scripts": {
+		"build": "webpack --mode production --devtool hidden-source-map",
+		"package": "yarn gen && yarn build && vsce package",
+		"publish": "vsce publish",
+		"unpublish": "vsce unpublish nutui.nutui-vscode-extension",
+		"gen": "node ./scripts/createComponentMap.js",
+		"plugin":"vsce package",
+		"reinstall": "npm run build && vsce package"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.0.0",
+		"@types/vscode": "^1.66.0",
+		"@typescript-eslint/eslint-plugin": "^5.9.1",
+		"@typescript-eslint/parser": "^5.9.1",
+		"@vscode/test-electron": "^2.0.3",
+		"eslint": "^8.6.0",
+		"glob": "^7.2.0",
+		"mocha": "^9.1.3",
+		"ts-loader": "^9.4.2",
+		"webpack": "^5.84.0",
+		"webpack-cli": "^5.1.1",
+		"@vscode/vsce": "^2.7.0"
+	}
+}
+
+```
+
+
+
+### 19.9.4 componentMap type 文件
+
+
+
+```ts
+export interface componentMapPropsType{
+  name:string,
+  snippet:string,
+  reg:RegExp
+  key:string[]
+}
+
+export interface componentMapBasicType {
+  name: string;
+  site?: string;
+  props:Array<componentMapPropsType> | null;
+  snippetStr:string[]
+}
+export type componentMapType = Array<componentMapBasicType>
+export const componentMap: componentMapType = [{
+  name: "button",
+  site: '/zh-CN/component/address',
+  props: [{
+    name:"className",
+    snippet:"className=\"${1|solid,light|}\" ",
+    reg:/clas.*/g,
+    key:["big","small","medium"]
+  }],
+  snippetStr: ["<wz-button type=\"${1|solid,light|}\" value =\"$2\"/> ",
+    "</wz-button name =\"$3\" >"
+  ],
+
+},
+{
+  name: "title",
+  site: '/zh-CN/component/address',
+  props: null,
+  snippetStr: ["<var name =\"$1\" value =\"$2\"/>",
+    "<var name =\"$3\" >"
+  ],
+  
+}
+
+
+];
+
+```
+
+
+
+
+
+### 11.9.5 extension.ts 文件
+
+```ts
+import * as vscode from 'vscode';
+import { kebabCase, bigCamelize } from './utils';
+import { componentMap } from './componentMap';
+import {componentMapPropsType} from "./componentMap"
+const H5DOC = 'https://yilaikesi.github.io/webzen-ui/components/icon';
+
+
+const LINK_REG = /(?<=<wz-)([\w-]+)/g;
+const BIG_LINK_REG = /(?<=<WZ-)([\w-])+/g;
+const files = ['vue', 'typescript', 'javascript', 'javascriptreact', 'typescriptreact'];
+
+// 覆盖上去 显示的 东西
+const provideHover = (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) => {
+ 
+  const line = document.lineAt(position);
+  const componentLink = line.text.match(LINK_REG) ?? [];
+  const componentBigLink = line.text.match(BIG_LINK_REG) ?? [];
+  const components = [...new Set([...componentLink, ...componentBigLink.map(kebabCase)])];
+
+  if (components.length) {
+    const text = new vscode.MarkdownString(
+      `webzenUI -> ${bigCamelize("测试一下")} 组件文档 [[H5]](${H5DOC}) \n`
+    )
+
+    return new vscode.Hover(text);
+  }
+};
+
+
+const provideCompletionItems = (document: vscode.TextDocument, position: vscode.Position) => {
+  console.log("被互踩")
+  const start: vscode.Position = new vscode.Position(position.line, 0);
+  const range: vscode.Range = new vscode.Range(start, position);
+  const text: string = document.getText(range);
+
+  
+  const completionItems: vscode.CompletionItem[] = [];
+  console.log(start,range,text)
+  // 检查正在输入的字符是否匹配特殊符号
+  
+  // 重要1：最简单的 string 替换
+  for (let i in componentMap) {
+    let temp = new vscode.CompletionItem(
+      {
+        label: `wz-${componentMap[i].name}`,
+        description: "我的插件"
+      }
+    )
+    temp.insertText = `<wz-${componentMap[i].name}></wz-${componentMap[i].name}}>`
+    completionItems.push(temp)
+  }
+
+  // 重要2： 模板字符串
+  for (let i in componentMap) {
+    let temp = new vscode.CompletionItem(
+      {
+        label: `wa-${componentMap[i].name}`,
+        description: "我的模板字符串"
+      }
+    )
+    let snippetStr = '';
+    componentMap[i].snippetStr.forEach((str: string, idx: number) => {
+      snippetStr += str
+      if (idx >= componentMap[i].snippetStr.length - 1) return
+      snippetStr += '\n'
+    })
+    temp.insertText = new vscode.SnippetString(snippetStr)
+    completionItems.push(temp)
+  }
+
+  // 重要三:属性赋值 正则
+  for(let i in componentMap){
+    if(componentMap[i].props){
+
+      SearchFn(componentMap[i].props,text,completionItems)
+    }
+  }
+
+
+
+  return new vscode.CompletionList(completionItems,false);
+};
+
+
+// className
+// classNameTwice
+const SearchFn = (props:Array<componentMapPropsType> | null, text: string,completionItems:any) => {
+  if(props){
+    props.forEach((v: componentMapPropsType) => {
+      const rawClasses = v.reg.test(text)
+      if (!rawClasses) {
+        // return [];
+      } else {
+        let arr = v.key
+        for (let i in arr) {
+          let temp = new vscode.CompletionItem(
+            {
+              label: `className-${arr[i]}`,
+              description: "我的正则字符串"
+            }
+          )
+          temp.insertText = new vscode.SnippetString(v["snippet"])
+          completionItems.push(temp)
+        }
+      }
+  
+    })
+  }
+}
+
+
+// resolveCompletionItem用于定义光标选中当前自动补全item时触发动作，一般情况下无需处理
+const resolveCompletionItem = (item: vscode.CompletionItem): any => {
+  console.log("item:",item)
+  return item;
+};
+
+const moveCursor = (characterDelta: number) => {
+  const active = vscode.window.activeTextEditor!.selection.active!;
+  const position = active.translate({ characterDelta });
+  vscode.window.activeTextEditor!.selection = new vscode.Selection(position, position);
+};
+
+export function activate(context: vscode.ExtensionContext) {
+  // command shift p 可以暴露命令出去
+  // vscode.commands.registerCommand 的 方法 默认不会执行。
+  // 只有 "contributes"之中的 "commands"  和 "activationEvents" 的 值存在，那么才行
+  console.log("我的插件激活了")
+  vscode.commands.registerCommand('nutui-move-cursor', moveCursor);
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(files, {
+      provideHover
+    }),
+    vscode.languages.registerCompletionItemProvider(files, {
+      provideCompletionItems,
+      resolveCompletionItem
+      // char
+    })
+  );
+}
+
+// export function deactivate() {}
+// import { ExtensionContext, languages, CompletionItem, CompletionItemKind, TextDocument, Position, Range } from 'vscode';
+
+// // 定义一个简单的元素属性提示示例
+// const attributeValues: Record<string, string[]> = {
+//   class: ['classA', 'classB', 'classC'],
+//   id: ['myId', 'yourId', 'theirId'],
+//   lang: ['en', 'fr', 'de']
+// };
+
+// function provideAttributeCompletion(document: TextDocument, position: Position) {
+//   const lineText = document.lineAt(position).text;
+//   const tagStart = lineText.lastIndexOf('<', position.character);
+//   const tagEnd = lineText.indexOf('>', position.character);
+
+//   // 确保当前光标位置在标签内部
+//   if (tagStart === -1 || tagEnd === -1 || tagStart > tagEnd) {
+//     return undefined;
+//   }
+
+//   const tagName = lineText.slice(tagStart + 1, tagEnd).trim();
+//   const attributeNameRange = new Range(position.line, tagStart + 1, position.line, position.character);
+//   const attributeNameMatch = lineText.substring(tagStart, position.character).match(/\s(\w+)=["']?$/);
+
+//   if (!attributeNameMatch) {
+//     return undefined;
+//   }
+
+//   const attributeName = attributeNameMatch[1];
+
+//   // 根据标签名和属性名获取可能的属性值
+//   const attributeValueSuggestions = attributeValues[attributeName] || [];
+
+//   // 生成补全建议列表
+//   const completionItems: CompletionItem[] = attributeValueSuggestions.map(value => {
+//     const item = new CompletionItem(value, CompletionItemKind.Value);
+//     item.detail = `Attribute value for "${attributeName}" in "${tagName}"`;
+//     item.textEdit = { range: attributeNameRange, newText: `${attributeName}="${value}"` };
+//     return item;
+//   });
+
+//   return completionItems;
+// }
+
+// export function activate(context: ExtensionContext) {
+//   // 注册补全提供程序
+//   context.subscriptions.push(
+//     vscode.languages.registerHoverProvider(files, {
+//       provideHover
+//     }),
+//     vscode.languages.registerCompletionItemProvider(files, {
+//       provideCompletionItems(document, position) {
+//         return provideAttributeCompletion(document, position);
+//       }
+//     })
+//   );
+// }
+
+
+```
+
+
+
+
+
+### 11.9.6 npm build 和 npm run publish 
+

@@ -495,8 +495,7 @@ cookie 是 服务端用来保持状态的。存储在客户端，可随意篡改
 jwt一般来说时签名算法(门禁卡).过期时间（7天）.我(用户信息)    Token并不能防止CSRF攻击，相反，更容易了。cookie好歹还能设个Httponly，token真是js随便用
 
 --3.OAuth2
-OAuth2 就是一种授权机制。类似于我给外卖小哥一个临时的门禁卡.这个思想广泛用在sso上面.
-例如前后端的授权码，例如a跳转到b请求b授权用户数据（现在的微信登陆和支付宝登陆就是这样），跳转时会返回一个授权码。令牌的使用一般是header加上一个Authorization。一般我们会有两个令牌，一个用来正常使用，一个用来更新令牌
+
 
 --4.非对称加密
 非对称加密就是加密和解密使用的不是相同的密钥：只有同一个公钥-私钥对才能正常加解密。
@@ -2167,21 +2166,1442 @@ console.log(res)  // 这样子就是分两个格子输出
 
 
 
+### 2.1.42 懒加载 (insertsectionobsserver)
 
+```ts
+：减少reflow
 
+const io = new IntersectionObserver(ioes => {
+  ioes.forEach(ioe => {
+    const el = ioe.target;
+    const intersectionRatio = ioe.intersectionRatio;
+    if (intersectionRatio > 0 && intersectionRatio <= 1) {
+      console.log("能看见元素")
+    }else{
+        console.log("看不见")
+    }
+    el.onload = el.onerror = () => io.unobserve(el);
+  });
+});
+const imgs = Array.from(document.querySelectorAll('#user-content--getboundingclientrect'));
+imgs.forEach(item => io.observe(item))
 
-
-
-## 2.2 快问快答
-
-```js
-1.从哪里学习
-开源项目排名，mdn，codepen
 ```
 
 
 
-## 2.3 项目中js高级
+### 2.1.39 DOM0 | DOM2 | DOM3
+
+```
+DOM0 : 行内元素
+DOM2 :addeventlistener 的 click事件
+DOM3 : 滚动 鼠标 焦点事件 合成事件（这玩意是输入耶）之类的
+```
+
+
+
+### 2.1.40 lut 引入 | canvas 的学习
+
+```js
+--1.基本概念
+lut 是 look up table 的缩写
+canvas 是 用rgba 来进行描述 图像处理 的
+因此 lut 其实 是一种 颜色的映射关系(255,255,255,100)
+
+ 一般会对[0,255]的取值进行采样, 得到一份采样之后的数据. 常见的采样一般是64 * 64 * 64或者33 * 33 * 33.cube 文件中就有一个size字段描述采样。里面的参数都从255 压缩到 1之内
+
+
+// size  size 是 64，table 是 64 *64 *3 
+
+ 
+// cube文件通过得到我们想要的数据（聚类，合成64 * 64 *3）
+ gettable 得到 table先
+ const [r, g, b] = lut3d([vr, vg, vb], table, size);
+注意：在canvas drawImage 之后，canvas.data 就有了4个值分别是rgba，然后我们通过遍历canvas 的length 将r g a b 分离，然后执行工具方法
+ 
+// lub3d 中 首先 找blue，然后是 red 最后是 green 的索引.这里是高位查表 用 最大索引值 * r/g/b ，分别用floor 和 min 来承载.最后的最后 低位插值，用下面的函数分别对r/g/b的最大 最小 进行处理
+
+function mix(small,high,b){
+   const ？ = b - Math.floor(b);
+ 	return Math.floor((small * (1 - ？) + high * ？) * 255); 
+}
+
+最后canvas.data[0] = r
+canvas.data[1] = g
+类似这样子就行了，替换成功
+ 
+ 
+第一步：高位查表
+首先根据blue 通道的颜色，确定我们需要的色值在哪一个方块
+例如将某一个通道除以255得到一个0-1之间的数字。例如0.08*(size-1) 得出 大小拿到整数.拿到整数之后计算索引
+Index = red + green * 65 + blue * 65 * 65。 跟我上面的构成table 其实是一样的，第一步查找blue 然后是green 最后是 red
+
+第二步：低位插值
+采用三线性插值的方法
+
+// 这里的 x,y,z 都是最小点
+var p1 = [x,y,z];
+// a，b，c是最大点
+var p2 = [a,b,c];
+
+sama
+
+ 
+2.pr 中可以 效果中查找lumetri 颜色 然后 导入 cube 文件
+也可以在这里 不导入 调整好后 直接导出
+```
+
+
+
+```html
+// 示例
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LUT</title>
+    <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+    <style type="text/css">
+        canvas {
+            width: 600px;
+        }
+    </style>
+</head>
+
+<body>
+    <video src="" style="width:200px;height:200px"></video>
+    <script>
+
+// function cameraStart() {
+//             let isFront = false;
+
+//             let config = {
+//                 audio: false, video: true, video: {
+//                     width: 700,
+//                     height: 500,
+//                     // 前后置摄像头
+//                     facingMode: isFront ? "user" : "environment",
+//                     // 帧率设置. 字面意思，一个是理想的状态下面，一个是最大的帧率
+//                     frameRate: { ideal: 30, max: 30 }
+//                 },
+//             };
+//             let video = document.querySelector("video");
+//             function successCallback(stream) {
+//                 // 将返回的流提供给控制台进行检查
+//                 window.stream = stream;
+//                 console.log(stream)
+//                 video.srcObject = stream;
+//                 // 播放
+//                 video.play();
+//             }
+//             function errorCallback(error) {
+//                 console.log("navigator.getUserMedia error: ", error);
+//             }
+//             // 传入3个参数，第一个是配置，第二个是成功的回调
+//             // 这个更加规范了，多加了一个mediaDevices。window.navigator.getUserMedia(config, successCallback, errorCallback);
+//             navigator.mediaDevices.getUserMedia(config)
+//                 .then(function (stream) {
+//                     successCallback(stream)
+//                 })
+//                 .catch(function (err) {
+//                     errorCallback(err)
+//                 });
+
+//         }
+//         // 调用
+//         cameraStart()
+
+        function getTable(url) {
+            return axios(url, {
+                method: 'GET',
+            })
+                .then(res => {
+                    const tableString = res.data;
+                    // 按行分割字符串
+                    const tempArr = tableString.split('\n');
+                    let lut_3d_size = 0;
+                    let start = -1;
+
+                    const table = [], resTable = []
+
+                    for (let i = 0; i < tempArr.length; i++) {
+                        const str = tempArr[i];
+                        // 获取采样数量
+                        if (str.includes('LUT_3D_SIZE')) {
+                            lut_3d_size = +str.replace('LUT_3D_SIZE', '');
+                            continue;
+                        }
+
+                        // 将空节点与文件头过滤掉
+                        if (!str || /[a-z]/i.test(str)) continue;
+
+                        // 得到色彩数据开始的索引
+                        if (start === -1) {
+                            start = i;
+                        }
+
+                        // 计算色彩数据真实的索引  重要：这里难理解但是还好，就是说没有索引是注释的序号的
+                        const idx = i - start;
+
+                        // 分割rgb的值
+                        const pixel = str.split(' ').map(s => Number(s)); //[ 3个值 ]
+                        console.log("idx / lut_3d_size",idx , lut_3d_size) 
+                        // 根据table的排列规律，创建二维数组(65 * 65 * 65),这里我们根据从文件中实际获取到的采样数来计算
+                        if (!table[Math.floor(idx / lut_3d_size)]) table[Math.floor(idx / lut_3d_size)] = [];
+                        // 重要：第一次拿到值
+                        table[Math.floor(idx / lut_3d_size)].push(pixel);
+                    }
+
+                    for (let idx = 0; idx < table.length; idx++) {
+                        const piece = table[idx]; // [ 65个值 ]
+                        // console.log("piece",piece)
+                        if (!resTable[Math.floor(idx / lut_3d_size)]) resTable[Math.floor(idx / lut_3d_size)] = [];
+                        resTable[Math.floor(idx / lut_3d_size)].push(piece);
+                    }
+                    console.log("result:", {
+                        table: resTable, //64 * 63 *3
+                        size: lut_3d_size
+                    })
+                    return {
+                        table: resTable,
+                        size: lut_3d_size
+                    }
+
+                })
+                .catch(err => {
+                    console.error(err)
+                })
+        }
+
+
+
+        function mix(x, y, b) {
+  const a = b - Math.floor(b);
+  return Math.floor((x * (1 - a) + y * a) * 255);
+}
+        
+
+
+
+function lut3d(targetColor, table, lut3dSize) {
+  const [r, g, b] = targetColor || [];
+
+  const tr = r / 255;
+  const tg = g / 255;
+  const tb = b / 255;
+
+  // 计算最大索引值
+  const n = lut3dSize - 1;
+  // 计算blue索引
+  const b_index = tb * n;
+  // 计算red索引
+  const r_index = Math.floor(tr * n);
+  // 计算green索引
+  const g_index = Math.floor(tg * n);
+
+  // 计算blue的离散索引
+  const b_floor_idx = Math.floor(b_index);
+  const b_ceil_idx = Math.ceil(b_index);
+
+  // 找到blue所在的数据
+  const b_ceil = table[b_ceil_idx];
+  const b_floor = table[b_floor_idx];
+
+  // 找到green所在的数据
+  const g_ceil = b_ceil[g_index];
+  const g_floor = b_floor[g_index];
+
+  // 找到red所在的数据， red对应的点，为将要替换的rgb目标数据
+  const r_ceil = g_ceil[r_index];
+  const r_floor = g_floor[r_index];
+
+  return [
+    mix(r_ceil[0], r_floor[0], tb),
+    mix(r_ceil[1], r_floor[1], tb),
+    mix(r_ceil[2], r_floor[2], tb),
+  ]
+}
+
+
+
+
+// 重要：上面的是工具方法，下面的才是主要逻辑
+
+        const video_url = 'origin.mp4';
+
+        const test_cube_file = 'Cinematic 04__OXYGENART.cube';
+
+
+    getTable(test_cube_file).then((res) => {
+      const { table, size } = res;
+      console.log(res)
+      const canvas = document.createElement("canvas");
+      const video = document.createElement("video");
+      const play_button = document.createElement("button");
+
+      play_button.innerHTML = '播放';
+
+      canvas.style.cssText = `
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-110%,-50%);
+      border:1px solid #333;
+      z-index:9999999;
+    `;
+
+      video.style.cssText = `
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(10%,-50%);
+      border:1px solid #333;
+      z-index:9999999;
+    `
+      play_button.style.cssText = `
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      border:1px solid #333;
+      z-index:9999999;
+    `
+      const ctx = canvas.getContext("2d");
+
+      video.crossOrigin = 'anonymous';
+      video.src = video_url;
+        // video.autoplay = true
+      video.oncanplaythrough = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        video.loop = true;
+
+        checkVideo();
+      }
+      
+      function checkVideo() {
+        
+        ctx?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        const video_image_data = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        const imageData = new ImageData(video_image_data.width, video_image_data.height)
+        const video_pixel_data = video_image_data.data;
+
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          // 基底素材的pixel
+          const vr = video_pixel_data[i];
+          const vg = video_pixel_data[i + 1];
+          const vb = video_pixel_data[i + 2];
+          const va = video_pixel_data[i + 3];
+
+        //   当前
+          const [r, g, b] = lut3d([vr, vg, vb], table, size);
+
+          imageData.data[i] = r
+          imageData.data[i + 1] = g
+          imageData.data[i + 2] = b
+          imageData.data[i + 3] = va;
+        }
+
+        ctx?.putImageData(imageData, 0, 0);
+        window.requestAnimationFrame(checkVideo)
+      }
+
+
+
+      play_button.onclick = () => {
+        video.play();
+      }
+
+
+      document.body.appendChild(canvas);
+      document.body.appendChild(video);
+      document.body.appendChild(play_button);
+
+    });
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
+```
+
+
+
+
+
+### 2.1.41 数组分块
+
+```js
+let chunk = (arr,count) =>{
+    let res =[]
+    while(arr.length){
+        res.push(arr.splice(0,count))
+    }
+    return res
+}
+
+let test = [ 1,5,6,9,7,5,2]
+console.log(chunk(test,2))
+```
+
+
+
+### 2.1.42 Beacon API(异步发送数据)
+
+```js
+过去，许多网站使用 unload 或 beforeunload 事件以在会话结束时发送统计数据。然而这是不可靠的，在许多情况下（尤其是移动设备）浏览器不会产生 unload、beforeunload 或 pagehide 事件
+
+//数据埋点接收数据后端示例：https://gitee.com/Electrolux/mock-receive-server
+--1.只能post请求
+--2.最大  65536 字符。
+let data ={id:1,name:"ceshi"}
+//window.navigator.sendBeacon('http://localhost:8088/post', data);
+document.addEventListener('visibilitychange', function logData() {
+  if (document.visibilityState === 'hidden') {
+    navigator.sendBeacon('http://localhost:8088/post', data);
+  }
+});
+// 
+var data = JSON.stringify({
+  name: 'Berwin'
+});
+
+window.navigator.sendBeacon('http://localhost:8088/post',data);
+```
+
+
+
+```
+let formData = new FormData();
+formData.append('text', '测试');
+navigator.sendBeacon("", formData);
+```
+
+
+
+
+
+
+
+
+
+
+
+### 2.1.46  esc  | 上下文  |  作用域链（scope），AO/VO，this 
+
+this有**默认**，**隐式**，显式（bind，call），new
+
+```js
+--0.上下文和作用域链的主要区别是 
+--0.1 作用域是静态的，上下文是js开始执行创造的（有栈的操作）
+--0.2 上下文是作用域的有作用域的差别
+
+
+
+
+--1.上下文：执行环境
+--1.1 全局执行上下文 ： 不在任何函数中的代码都位于全局执行上下文中
+--1.2 函数执行上下文
+--1.3 eval
+1.3 生命周期：
+--1.3.1 创建阶段 （三件事）
+创建变量对象：首先初始化函数的参数 arguments（VO的开始 value还没有赋值。 然后进入执行阶段会变成AO-活动对象），提升函数声明和变量声明
+创造作用域链：找到最近变量就停止
+确定this
+--1.3.2 执行阶段（三件事）
+ 变量赋值
+ 函数引用
+ 执行代码
+--1.3.3回收阶段
+函数执行完毕后出栈，对应的执行上下文也出栈
+
+1.4 注意：
+--1.4.1 全局执行上下文在代码开始执行时就创建，有且只有一个，永远在执行上下文栈的栈底，浏览器窗口关闭时它才出栈
+--1.4.2 函数调用的时候入栈出栈
+
+
+
+--2.作用域：
+--2.1 全局作用域
+--2.2 函数作用域
+--2.3 块级作用域
+
+
+--3.VO过程
+--3.1 创造arguments对象
+--3.2 检查function
+--3.3 检查 var ：如果 var 定义变量的时候发现已有同名函数定义则跳过变量定义
+
+function a(){};function a(){}  这样不会报错，并且执行会执行最后一个
+function a(){};let a = 56 会报错
+function a(){}
+
+
+“算了我以一个函数来说把，主要是创建和执行。假设有一个A函数，过程是这样的创建全局执行上下文、压入esc、全局上下文初始化、执行A函数、创建A函数执行上下文，压入esc，A函数上下文初始化，这个初始化过程是这样的：创建作用域链、emm我上面提漏了一个A函数被创建全局上下文被保存到scope中的过程，是复制scpoe创建作用域链,用arguments创建活动对象，初始化活动对于，将活动对象压入链顶，执行完毕，上下文弹出。”
+
+“但是全局上下文一直在栈底，而VO和AO的确认，我感觉是取决是是否可访问的。”
+
+“而闭包就是上下文链中上下文scope被销毁了，但因为保持了对scope中某个变量的引用，这应该就是你上面说的回收原理的根节点实现的这个东西把，导致没销毁干净，留存在了内存中，完成了闭包”
+
+
+--4. 题目（vo声明，执行上下文）
+注意：函数声明提升更加靠前
+--4.1 let 不能变量提升
+foo();
+let foo = function foo() {
+    console.log('foo1');
+}
+function foo() {
+    console.log('foo2');
+}
+foo();  //直接报错
+
+--4.2 如果 var 定义变量的时候发现已有同名函数定义则跳过变量定义，不做变量提升
+foo();
+var foo = function foo() {
+    console.log('foo1');
+}
+function foo() {
+    console.log('foo2');
+}
+foo();  //foo2 foo1
+
+
+--4.3 跟上面一样
+foo();
+function foo() {
+    console.log('foo2');
+}
+var foo = function foo() {
+    console.log('foo1');
+}
+
+foo();  //foo2 foo1
+
+
+
+--4.3  只有var 的变量提升
+var foo2 = 10;
+function foo() {
+    console.log(foo2);
+    var foo2 = 10;
+    console.log(foo2);
+}
+foo() // undefine,10
+
+--4.4  变量没有提升，这里是考察作用域
+var foo = 1;
+function bar () {
+    console.log(foo);
+    foo = 2;
+}
+bar();
+console.log(foo);
+
+```
+
+
+
+### 2.1.46 递归 和 栈溢出优化 | 尾递归优化（淦）
+
+```js
+尾递归优化：防止全局上下文的爆栈，函数的最后一步是返回一个函数的运行结果
+
+function recursion (num) {
+ if (num === 0) return num;
+ return recursion(num - 1) + num;
+}   
+优化后
+function recursion (num, sum = 0) {
+ if (num === 0) return sum;
+ return recursion(num - 1, sum + num);
+}  //也是报错
+recursion(10000) // => 50005000
+
+尾调用由于是函数的最后一步操作，所以不需要保留外层函数的相关信息，因为调用位置、内部变量等信息都不会再用到了，只要直接用内层函数的调用记录，取代外层函数的调用记录就可以了，这样一来，运行尾递归函数时，执行栈永远只会新增一个上下文。
+
+其实，尾递归优化这种东西，现在没有任何一个浏览器是支持的（据说 Safari 13 是支持的）
+```
+
+
+
+
+
+### 2.1.48 拖拽事件
+
+```js
+拖动的元素事件：(drag ， dragstart  ，和dragend)
+拖动的目标事件（容器）：ondrop，ondropenter/over/leave/。
+
+拖动元素的属性要用dataTransfer对象来获取值。
+
+
+1.拖拽单文件事件
+ <div draggable="true" id="box"></div> 
+box.ondragend = function (e) {
+    //拖拽到哪里就放到哪里
+    box.style.cssText = 'top:' + (e.clientY) + 'px;left:' + (e.clientX) + 'px'
+}
+
+————————————————————————————
+2.拖拽多文件事件
+ <div draggable="true" id="box"></div> 
+box.ondragend((e)=>{
+	let dataFiles = e.dataTransfer.files
+	dataFiles.forEach((file)=>{
+		let fileR = new FileReader()
+		fileR.readAsDataURL(file)
+		fileR.onload((value)=>{
+			//这里就可以自由发挥了
+			console.log(value)
+		})
+		console.log()
+	})
+})
+
+<input type="file" id="type">
+document.querySelector("#type").onChange((e)=>{
+  console.log(e.target.files) //e.files也是有可能的
+})
+
+
+————————————————————————
+
+3. 拖拽div区域
+
+<div id="type">
+//经过，只有是设置了阻止默认事件才能够解锁松开鼠标ondrop
+document.querySelector("#type").ondragover((e)=>{
+  e.preventDefault()
+})
+
+//放下
+document.querySelector("#type").ondrag((e)=>{
+  e.preventDefault()
+  console.log(e.dataTransfer.files)
+})
+
+//设定拖动影子的样式
+e. dataTransfer.setDragImage(img,100,100)
+```
+
+
+
+### 2.1.49 js 逆向
+
+```
+防护系统：一抓包就闪退+白屏+通过用户证书直接可以用
+
+小黄鸟不可用的原因
+用户证书（安卓7之前手机相信这个） ｜ 手机只相信系统证书（ca机构）。所以我们如果没有root，那么小黄鸟就不能抓包了
+
+解决方法：套一层虚拟机，然后用小黄鸟去监听虚拟机
+```
+
+
+
+#### 2.1.49.1 网页工具
+
+
+
+```js
+1.2.0 element
+
+element的event listener中 。勾上 ancestor all 就可以看到全局的事件，反之只能够看到当前的事件
+
+1.2.1 network
+
+大界面打开一个preserve 和 disable cache
+
+preserve log （打开的：界面打开一个新界面不会清除调试输出）
+disable cache（打开的：就不会执行304，全部会重新进行请求。返回的都会变成200）
+逆向中全部勾上就可以了
+
+里面的表头 initator 可以查看调用栈 ｜ 有的是浏览器自己开启的
+里面表头 的waterfall 是可以查看 调用的顺序
+
+1.2.2 source  
+
+资源面板：右上角三个小点打开，有一个搜索界面，点击这个在下方能够添加别的一些界面（console 之类的）。中间下面会有一段小小的格式化，中间偏右 那里
+
+1.2.2.1左边的小面板：
+
+
+1.page：所有的资源文件都在里面-（平常我们不会去用它）
+
+2.fileSystem：关联子目录
+
+3.overrides：重写（可以对当前网站的js进行替换）。勾选上允许重写后（关联子目录后）。我们可以找到network的js里面，右键然后open in source panel 或者是 save for overrides-有的网站兼容模式下面运行，那么overrides就不会执行。所以我们会用到极速模式来进行执行
+
+4.content script：上下文的脚本
+
+5.snippets 
+默认是都会执行的脚本（任何事件，任何网址）
+
+
+1.2.2.2右边的小面板：
+
+勾上最后一个的pause on caught exceptioj
+
+第一个是 奔向下一个断点
+第二个是 一个一个方法的进行执行 （可以找出其中方法逻辑）
+第三个是 在这个语句里面一条条 代码块运行（）
+第四个是 返回到这个方法调用的位置
+第五个是 跟第三个一样的，只是会在文件的开头开始运行
+第六个是 可以让所有断点都失效
+最后一个 don‘t pause on excetion 变蓝。把pause on caught exception 勾上。这样就可以避免try catch 进入catch而会直接报错。（要勾上）
+下面的watch 可以监听，类似于console这个变量
+
+断点可以右键移除和添加
+
+1.2.2.3 console面板
+
+左上角可以show console sidebar：可以区分重要性
+然后fliter输入框可以写正则。然后可以。用类似于url:www.Baird.com来进行过滤
+
+
+勾上preserve log 和group similar 和 log xmlhttprequests
+evaluate triggers users activation, autocomplete from history, eagar evalution
+
+hide network ：隐藏404之类的东西
+preserve log ： 是否清除缓存。（勾上就不清除缓存了）
+group similar：分组（相同的会放在一起，不会展开）
+eagar evalution：可以预览结果
+autocomplete from history ：自动补全
+evaluate triggers users activation ：一些api无法靠js触发。例如有声影片自动播放开启popup（弹窗），下载档案。这里我们之所以能够用window.open打开是因为这个选项打开从而保持user activation。如果我们延迟5s弹出，那么就会弹出user activation警告
+log xmlhttpprerequest ： 打印http请求（promise例如 fetch(“xx”)）
+
+
+1.2.3 application
+
+这里面其实存储和缓存会比较多。简单
+但是要注意这里我们说的清除缓存只是清除浏览器的缓存，但是变量的缓存是清除不掉的。例如 window.a 清除不掉
+
+
+```
+
+
+
+
+
+#### 2.1.49.2  网页工具断点
+
+```js
+本地进行js 请求，对js请求进行修改，能修改
+批量监听
+更智能的监听
+
+1.3.1 断点
+
+DOM 断点：什么时候渲染的数据（渲染页面改变出来某一个数据）-无法根据栈快速定位-我们可以通过element 的鼠标 右键 直接在 element上面 直接添加breakpoint
+
+DOM事件断点：什么时候进行的事件（点击事件的断点）-跟上一个差不多。我们可以在element中 eventlistener 中不选择 ancestor all 然后就可以定位到代码的位置 然后就可以手动下断
+
+XHR 断点 ： 进行事件请求的断点 （）- 距离加密（逆向的目标）函数比较近，可以直接看到栈调用-具体来说是我们从后往前复制公用的部分。然后我们在source中的xhr中 add url我们 添加  公用的部分就可以打断点了（数字广东的朋友问过我这个问题）
+
+代码行断点 ：手动断点-代码前点一下就会变成绿色
+
+代码断点 ：debugger
+
+全局事件断点：浏览器事件断点（source的 最右边进行断点操作）
+
+异常捕获断点：source的最右边点击蓝色 然后 pause on caught exception勾上。不想断的地方右键选择这个断点然后edit 填入false
+
+debugger
+
+1.3.2 方法栈 ｜ 跟值
+
+这里是基于xhr ，我们在 source中 找到xhr 事件，然后我们找到request url，找到xhr
+
+首先的跟值就是 点一下ctrl 我们就可以找到这个函数的结构（直到没有智能提示我们就可以确定这个是函数的开始）。找到xhr中的open函数
+
+
+```
+
+
+
+### 2.1.50 错误处理
+
+```js
+--1.throw Expressions (stage 2)
+let x = throw new Error("Unsupported encoding");
+
+--2.Promise.try  可以更加精确的捕获同步错误。
+里面抛出的错误能够被捕获
+function getUserNameById(id) {
+    return Promise.try(function() {
+        if (typeof id !== "number") {
+            throw new Error("id must be a number");
+        }
+        return db.getUserById(id);
+    }).then((user)=>{
+        return user.name
+});
+}
+--3.Error Cause
+
+就是throw new Error('Upload job result failed', { cause: err });
+然后 是使用 。相当于他会帮你自定义一个类型出来
+try {
+  await doJob();
+} catch (e) {
+  console.log(e);
+  console.log('Caused by', e.cause);
+}
+// Error: Upload job result failed
+// Caused by TypeError: Failed to fetch
+```
+
+
+
+
+
+### 2.1.51 keep alive 原理
+
+不会生成真正的DOM节点，并且能够缓存组件
+
+最简单就是使用display:none来将 这个dom隐藏。但是这种方法并没有做到dom真正的移除，又让组件没有被销毁
+
+```js
+要实现这个我们必须要依赖虚拟dom，也就是说我们要手写框架？
+
+document.createElement 在内存中创建一个元素，然后再通过 React.createPoral 把 React 子节点渲染到这个元素上。如果不满足的我们会用ref来移除这个元素
+
+在react中 我们可以用 portal 和ref 来进行控制，具体代码如下
+
+export const Conditional = props => {
+  const [targetElement] = useState(() => document.createElement('div'))
+  const containerRef = useRef()
+  useLayoutEffect(() => {
+    if (props.active) {
+      containerRef.current.appendChild(targetElement)
+    } else {
+      try {
+        containerRef.current.removeChild(targetElement)
+      } catch (e) {}
+    }
+  }, [props.active])
+  return (
+    <>
+      <div ref={containerRef} />
+      {ReactDOM.createPortal(props.children, targetElement)}
+    </>
+  )
+}
+
+<Conditional active={!shouldHide}>
+  <Foo/>
+</Conditional>
+
+缺点：需要手动控制 active ，不能直接基于子组件销毁/创建的生命周期事件
+
+缺少失活/激活的生命周期时间，子组件无法感知自己是不是被缓存起来了
+
+依赖了 ReactDOM ，对 SSR 不够友好
+```
+
+### 2.1.52  并发 | idle
+
+```js
+js并发：
+1.nginx里面合并前端请求 nginx-http-concat。或者阿里的tengine，它也能够合并前端请求
+2.缓存 
+3.请求数，资源供给，请求分流 
+4.压缩传输 
+5.读写分离
+6.promise.all([两个或者三个请求],[两个或者三个请求])
+7. createDocumentFragment | async 和 defer | temple
+8. requestIdleCallback：
+16ms之后requestIdleCallback 里注册的任务。
+```
+
+### 2.1.53 有DTD document.documentElement | 无document.body
+
+
+
+### 2.1.54 栈(容器)  | 堆(房间) |  闭包原理 | 最大堆 | 最小堆
+
+https://www.zhihu.com/question/482433315/answer/2083349992
+
+```js
+堆类似于树，最大堆就是顶点是最大的。最小堆就是顶点是最小的
+
+--1.定义
+v8默认的栈区大小为984KB
+注意：在不同时期，不同操作系统中V8对于字符串大小的限制并不相同。大概有个范围是256MiB ～ 1GiB
+
+栈像个容器，容量小速度快(基本类型)
+堆像个房间，容量较大(引用类型),但是引用类型的引用（变量）还是存在栈内存中的
+
+通过引用到堆中查找实际对象
+
+--2.为什么 引用对象放在堆里面。基本数据类型放在栈里面？
+栈是占用固定空间，先进后出。在变量使用完成后就可以将其释放，内存回收容易实现。
+堆是动态分配内存。先进先出。只有引用他的变量不存在的时候才会被垃圾机制回收
+
+--3.既然引用对象放在堆里面。基本数据类型放在栈里面？那么针对于太大的基本字符串，js引擎会怎么做？
+
+在栈内存不下，只能存在字符串常量池中，如果是 let a = "78" 的形式.那么就是在栈中 的变量进行引用。如果是 let a =new String("78") 那么就会在堆中进行引用
+
+注意一下特例：字符串的缓存：v8内部有一个名为stringTable的hashmap会缓存所有字符串。会根据其特征换算为一个hash值，通过hash的key比对来实现缓存。如果不存在我们才会存到长两次然后把地址付给变量。这也是V8中的字符串都是不可变的原因
+
+字符串拼接做了哪些操作？
+这里如果内容相同，地址就会不一样。这一点注意一下
+
+--4.数字的分配和内存改变的机制：
+42 会被当成Smi
+数字在V8中分为 smi 和 heapNumber：heapNumber 类似字符串 不可变
+
+--5.总结
+数字： 小整数存在栈中，其他类型存在堆中。
+字符串： 存在堆里，栈中为引用地址，如果存在相同字符串，则引用地址相同。
+boolean 在栈中
+
+
+js engine 是c 开发的。栈区（stack） 由编译器自动分配释放。堆区（heap）一般由程序员分配释放，使用 malloc 或 new 等。偏偏 不再经过 C/C++ 编译器编译，具体 JS 变量类型，也被拆分为具体实现 Engine 的Native Code 变量类型
+
+
+```
+
+
+
+
+
+
+
+```js
+闭包原理
+--1.外层函数作用于对象能保留下来是因为被内层函数对象的作用域引用者，无法释放。
+
+--2.能访问上级函数作用域中的变量（哪怕上级函数上下文已经销毁）
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 2.1.57 fragment
+
+```js
+可以把他当作一个虚拟dom。
+const fragment = document.createDocumentFragment()
+let temp  = document.createElement("div").innrtHTML = 56
+fragment.appendChild(fragment)
+document.body.append(fragment)
+
+```
+
+
+
+### 2.1.58 浏览器一帧内做了什么
+
+```js
+input events(click 之类的)
+js
+begin frame
+RAF（RequestAnimationFrame）
+layout
+paint
+RIC (RequestIdelCallback)：这一个只有一帧小于16ms 才会执行
+
+```
+
+
+
+
+
+### 2.1.59 settimeout 和 setinterval的第三个参数
+
+
+
+```js
+//第三个以后的参数是作为第一个func()的参数传进去。
+for ( var i=1; i<=5; i++) {
+	    setTimeout((j)=> {
+	        console.log( j );
+	    }, i*1000 ,i);
+}
+
+这样写就错了
+```
+
+
+
+
+
+### 2.1.60 锚点导航 | scrollIntoView
+
+
+
+```js
+document.querySelector("#comment > div > div.comment > div > div.comment-list > div:nth-child(2) > div.con > p").scrollIntoView({
+    behavior:"smooth",// 平滑过渡
+    block:"start", //垂直方向的对齐
+    inline:"start"
+})
+```
+
+
+
+### 2.1.61 控制光标位置 |  setSelectionRange
+
+```js
+<input type="text" name="" id="text" placeholder="请输入">
+    <script>
+        document.querySelector("#text").focus()
+        document.querySelector("#text").setSelectionRange(0,0)
+    </script>
+```
+
+
+
+
+
+### 2.1.62 画中画  |   PictureInPicture
+
+```js
+document.querySelector(".xx").addEventListener('enterpirtureinpirture',()=>{
+    
+})
+
+document.querySelector(".xx").addEventListener('leavepirtureinpirture',()=>{
+    
+})
+
+if(document.querySelector(".xx")!==pictureInPictureElement){
+    await  document.querySelector(".xx").requestPictureInPicture((res)=>{})
+}
+```
+
+
+
+
+
+### 2.1.63 xhr 发送 | new open send onreadystatechange
+
+```js
+let ajax = (data,url)=>{
+    //step1 : 设置请求头
+    let xhr = new XMLHttpRequest(); 
+    //step2：设置请求方式和请求头 //true表示异步
+	xhr.open("POST", url, true);   
+    xhr.setRequestHeader("Content-type", "application/json");
+    //step3：请求数据
+    xhr.send(data);
+     // step4：readyState是xhr的请求状态
+     //状态4表示已发送请求，服务器已完成返回响应，浏览器已完成了下载响应内容。0-4都有值的
+    xhr.onreadystatechange = function() {
+     
+      if (xhr.readyState === 4 && xhr.status === 200) {
+          console.log(xhr.responseText);
+      }
+  };
+}
+
+
+
+```
+
+
+
+### 2.1.64 prototype | 函数扩展 | 可以扩展字符串
+
+```js
+let arr = [ 9,3,11,6]
+Array.prototype.max =function (param){
+    console.log(this) //[ 9,3,11,6]
+    return this.sort()[0]
+}
+arr.max()
+```
+
+
+
+### 2.1.65 数据埋点 | 用户 | 性能(白屏 渲染时间)
+
+```js
+--1.数据监控
+--1.1 PV
+--1.2 监听页面进入（load） 和 页面离开（pagehide 和 hashchange）。window.addEventListener('hashchange')
+--1.3 用户行为
+
+--2.性能监控
+--2.1 首屏加载时间
+--2.2 白屏时间
+--2.3 页面渲染时间
+--2.4 页面交互动画完成时间
+--2.5 静态资源整体下载时间
+--2.6 http 请求
+
+--3.异常监控
+--3.1 Javascript的异常监控
+--3.2 样式丢失的异常监控
+```
+
+### 2.1.66 剪切板
+
+```js
+--1.
+navigator.clipboard.writeText("dsa")
+    .then(() => alert("复制成功！"));
+    //如果我们想直接使用会报错
+--2.
+创造一个文本域
+oInput.select();
+    
+    document.execCommand("Copy");
+    //对选择对象的值进行复制到浏览器中
+```
+
+
+
+
+
+
+
+### 2.1.67 事件冒泡
+
+指的是在设置了事件监听器时候，会顺着dom树的结构，向上执行
+
+```html
+<div id="div1">
+  div1
+  <div id="div2">
+    div2
+    <div id="div3">div3</div>
+  </div>
+</div>;
+
+// javascript:
+<body>
+function handleClick(event) {
+  console.log(event.currentTarget.id);
+}
+for (let i = 1; i <= 3; i++) {
+  let div = document.getElementById(`div${i}`);
+  div.addEventListener("click", handleClick);
+}
+</body>
+    
+<!-- 我们再点击在里面的div3的时候，会输出div3 div2 div1-->
+ <!-- 如果说要避免这一个情况可以
+
+
+function handleClick(event) {
+  event.stopPropagation();
+  console.log(event.currentTarget.id);
+}
+
+-->
+event.stopPropagation(); 
+```
+
+
+
+
+
+### 2.1.69 length  | bug | 码元是小一点 | substring bug
+
+```js
+一些 emoji 的东西的length 可能会有一点不一样
+
+原因在于 length 的 码点 和 码元
+
+我们将一个16/32位的二进制编码 叫做一个码元，一个码点 可以是 一个码元 也可以是两个码元. length 属性 返回的是 码元（小）
+
+正确的方式是Array.from("xx").length
+```
+
+
+
+### 2.1.70 class 内 | 私有字段 | 静态变量 | 类静态初始化
+
+```js
+--1.私有字段
+以前是加一个_
+_myName(){
+
+}
+
+现在可以命名成
+#myName(){
+
+}
+在外面就不可以直接调用
+
+
+--2.static 的 作用
+class Person {
+  /* 1.1、实例属性，直接定义的属性，要new实例后，实例去访问的*/
+  name= "tom";
+  /* 1.2、静态属性（类属性），通过static开头的属性，Person类可以访问,
+    不需要创建实例，实例访问不到static */
+  static height = 180;
+  /* 1.3、只读属性，readonly开头的属性，只可读，不可改 ts才能用 */ 
+  //readonly money= 1000;
+  /* 1.4、方法，readonly开头的属性，只可读，不可改*/
+  say(){
+      console.log('hello world');    
+  }
+  static work(){
+      console.log('我能挣钱');    
+  }
+}
+
+console.log(new Person().height)
+--3.类静态初始化
+
+例如
+class person {
+    static age =1.2
+}
+可以变成
+class person {
+    static{
+        this.age = 1.2
+    }
+}
+```
+
+
+
+### 2.1.71 worker | 优化
+
+```js
+worker.js中 
+接收 worker 并且进行 事件逻辑处理
+
+onmessage = function (e) {
+    let sortData = e.data.sort((a,b)=>{
+        return a-b
+    })
+    postMessage(sortData)
+}
+
+index.html 中
+let worker = new Worker("worker.js")
+let arr = [1,3,4,34,2]
+
+worker.postMessage(arr)
+worker.onmessage= function (e){
+    console.log(e.data)
+}
+
+
+```
+
+
+
+
+
+### 2.1.72 遍历 object | set | array | map 删除元素  | ,map 删除元素也是这样
+
+边遍历 边删除元素
+
+```ts
+遍历Object | array | set | map 时删除元素,那么就直接删掉了
+const myObject = { a: 1, b: 2, c: 3 };
+for (const key in myObject) {
+  if (myObject[key] === 2) {
+    delete myObject["c"]; 
+  }
+  console.log(key, myObject[key]); 
+}
+
+// 输出 a 1 | b 2
+
+const mySet = new Set([1, 2, 3, 4]);
+for (const item of mySet) {
+  if (item === 2) {
+    mySet.delete(1); 
+  }
+  console.log(item); 
+};
+console.log(mySet) // 2 3 4
+```
+
+
+
+```ts
+const a = [1,5,6,9]
+let b =a.map((e,index)=>{
+    delete a[index]
+    return index
+})
+```
+
+
+
+```ts
+let ac =  [5,4,9];
+for (const key in ac) {
+  if (ac[key] === 4) {
+    delete ac[0]; 
+  }
+  console.log(key, ac[key],ac); 
+}
+```
+
+
+
+### 2.1.73 空数组用every或some会返回什么
+
+```js
+every 是 true // 所有元素满足
+some 是 false // 有一个元素满足测试函数
+```
+
+
+
+### 2.1.74  for 和 foreach 的 异步处理
+
+```js
+总结：forEach循环和for循环对于异步方法的处理有一些区别。在forEach中，异步方法不会阻塞循环本身的执行，而是会在后台异步执行。而在for循环中，异步方法如果使用await等待异步操作完成，会导致循环会等待每个异步任务完成后再继续执行下一次循环迭代。所以，如果你需要保证异步方法按顺序执行，可以使用for循环，并在异步方法内使用await等待异步操作的完成。
+```
+
+
+
+### 2.1.75 对 set 和 map 进行 json.stringify
+
+```js
+要是直接转化 那么输出 是空 {}
+
+
+
+对于 map 我们要
+const myMap = new Map([
+  ['key1', 'value1'],
+  ['key2', 'value2'],
+]);
+// Object.fromEntries方法则允许我们从一个由键值对数组表示的数据结构中，创建一个新的对象
+// [...myMap] 可以 转化成 [[]] 
+// array.from 也是一样
+const mapToObject = Object.fromEntries(myMap); // 转换为对象
+const jsonString = JSON.stringify(mapToObject);
+console.log(jsonString); 
+// 输出 {"key1":"value1","key2":"value2"}
+```
+
+
+
+
+
+### 2.1.76 路由原理
+
+```ts
+hashrouter中存放两个状态  一个是hash一个是push方法。push方法就是提供给其他组件进行调用。其实原理就是window..location.hash＝xxxx，然后监听hashchange状态，在状态改变的时候给状态赋值，然后内部给一个createcontext，里面是在路由文件中定义的组件  {{props.child}}。  用provider渲染
+
+
+route 里面存放 路径，是否匹配 和路由文件三个。这里面其实是一个消费者
+
+link 是一个其实调用了第一个的push方法。也是一个消费者，comsumer
+
+而默认404路由是通过一个switchjs匹配不到其他的组件才会匹配一个默认的
+
+
+history{
+pathname
+push 方法
+}
+queue数组
+browerroute的区别在于 这是通过window.location.pushstate.然后多添加了一个queqe方法来做。window.addeventlistener  的popstate方法
+```
+
+
+
+
+
+### 2.1.77 异步数组循环 | 阻塞 
+
+
+
+```js
+刚刚发现了一个东西，map，reduce，forEach,map中用异步函数加上async await都不会阻塞，只有for，for...in,for...of加上async await能够阻塞
+
+示例
+async function asyncFunc(data:any) {
+    return new Promise(async(resolve) => {
+        setTimeout(() => {
+            console.log(data)
+            resolve(data);
+        }, Math.random() * 1000);
+    });
+}
+const array = [1, 2, 3];
+
+// 这样子 不会按照顺序输出
+// array.map(async (item) => {
+// const result = await asyncFunc(item);
+//     // console.log(result);
+//     return result
+// });
+
+// for循环 获取.也不能按顺序输出，但是可以把集合 合起来
+// console.log(await Promise.all(array.map(async(e,i)=>{
+//     return await asyncFunc(i)
+// })))
+
+for(let i of array){
+     await asyncFunc(i);
+}
+
+console.log("dssds")
+
+
+```
+
+
+
+### 2.1.78  短路运算符 和 ??
+
+ ```js
+一般来说，只会用 || 来进行默认值
+像是 obj.a.b.c.d 比较危险 我们就可以 obj.a && obj.a.b && obj.a.b.c.可选链也可以
+
+在 xx && yy  表达式中，只有当 xx 是真值时，yy 才会被执行，否则不会执行 yy 并且该表达式的结果为 串联
+在 xx || yy 表达式中，只有当 xx 是假值时，yy 才会被执行，否则不会执行 yy 并且该表达式的结果为 并联
+
+实例：
+console.log("" && 'str1');  // 输出 "" 
+console.log("" || 'str1');  // 输出第二个。这个做空值表达式不错,可以用 不是正值的默认情况，比如后端返回 '' 的时候。玩不了一点
+注意 ?? 不能用来随便来做 空值表达式 因为 ?? 只对 undefined 和 null 生效 像是 0 '' 是不会生效的  // 可以用来做一个变量的默认值
+ ```
+
+
+
+
+
+
+
+
+## 2.2 数据结构
+
+
+
+
+
+## 2.3 项目中js (工具)
 
 
 
@@ -2368,8 +3788,6 @@ window.addEventListener("message", function (event) {
 
 
 
-
-
 ## 2.4 webgl
 
 ### 2.4.1 webgl基础
@@ -2506,98 +3924,6 @@ solution：
 
 
 
-### 2.5.1 polyfill 实操
-
-#### 2.5.1.1 jsconfig.json
-
-```js
-{
-    "target": "es2015", // 指定要使用的默认库，值为"es3","es5","es2015"...
-    "compilerOptions": {
-        "module": "commonjs", // 在生成模块代码时指定模块系统
-        "experimentalDecorators": true,
-        "compilerOptions": {
-            "incremental": true, // TS编译器在第一次编译之后会生成一个存储编译信息的文件，第二次编译会在第一次的基础上进行增量编译，可以提高编译的速度
-            "tsBuildInfoFile": "./buildFile", // 增量编译文件的存储位置
-            "diagnostics": true, // 打印诊断信息 
-            "target": "ES5", // 目标语言的版本
-            "module": "CommonJS", // 生成代码的模板标准
-            "outFile": "./app.js", // 将多个相互依赖的文件生成一个文件，可以用在AMD模块中，即开启时应设置"module": "AMD",
-            "lib": ["DOM", "ES2015", "ScriptHost", "ES2019.Array"], // TS需要引用的库，即声明文件，es5 默认引用dom、es5、scripthost,如需要使用es的高级版本特性，通常都需要配置，如es8的数组新特性需要引入"ES2019.Array",
-            "allowJS": true, // 允许编译器编译JS，JSX文件
-            "checkJs": true, // 允许在JS文件中报错，通常与allowJS一起使用
-            "outDir": "./dist", // 指定输出目录
-            "rootDir": "./", // 指定输出文件目录(用于输出)，用于控制输出目录结构
-            "declaration": true, // 生成声明文件，开启后会自动生成声明文件
-            "declarationDir": "./file", // 指定生成声明文件存放目录
-            "emitDeclarationOnly": true, // 只生成声明文件，而不会生成js文件
-            "sourceMap": true, // 生成目标文件的sourceMap文件
-            "inlineSourceMap": true, // 生成目标文件的inline SourceMap，inline SourceMap会包含在生成的js文件中
-            "declarationMap": true, // 为声明文件生成sourceMap
-            "typeRoots": [], // 声明文件目录，默认时node_modules/@types
-            "types": [], // 加载的声明文件包
-            "removeComments":true, // 删除注释 
-            "noEmit": true, // 不输出文件,即编译后不会生成任何js文件
-            "noEmitOnError": true, // 发送错误时不输出任何文件
-            "noEmitHelpers": true, // 不生成helper函数，减小体积，需要额外安装，常配合importHelpers一起使用
-            "importHelpers": true, // 通过tslib引入helper函数，文件必须是模块
-            "downlevelIteration": true, // 降级遍历器实现，如果目标源是es3/5，那么遍历器会有降级的实现
-            "strict": true, // 开启所有严格的类型检查
-            "alwaysStrict": true, // 在代码中注入'use strict'
-            "noImplicitAny": true, // 不允许隐式的any类型
-            "strictNullChecks": true, // 不允许把null、undefined赋值给其他类型的变量
-            "strictFunctionTypes": true, // 不允许函数参数双向协变
-            "strictPropertyInitialization": true, // 类的实例属性必须初始化
-            "strictBindCallApply": true, // 严格的bind/call/apply检查
-            "noImplicitThis": true, // 不允许this有隐式的any类型
-            "noUnusedLocals": true, // 检查只声明、未使用的局部变量(只提示不报错)
-            "noUnusedParameters": true, // 检查未使用的函数参数(只提示不报错)
-            "noFallthroughCasesInSwitch": true, // 防止switch语句贯穿(即如果没有break语句后面不会执行)
-            "noImplicitReturns": true, //每个分支都会有返回值
-            "esModuleInterop": true, // 允许export=导出，由import from 导入
-            "allowUmdGlobalAccess": true, // 允许在模块中全局变量的方式访问umd模块
-            "moduleResolution": "node", // 模块解析策略，ts默认用node的解析策略，即相对的方式导入
-            "baseUrl": "./", // 解析非相对模块的基地址，默认是当前目录
-            "paths": { // 路径映射，相对于baseUrl
-              // 如使用jq时不想使用默认版本，而需要手动指定版本，可进行如下配置
-              "jquery": ["node_modules/jquery/dist/jquery.min.js"]
-            },
-            "rootDirs": ["src","out"], // 将多个目录放在一个虚拟目录下，用于运行时，即编译后引入文件的位置可能发生变化，这也设置可以虚拟src和out在同一个目录下，不用再去改变路径也不会报错
-            "listEmittedFiles": true, // 打印输出文件
-            "listFiles": true// 打印编译的文件(包括引用的声明文件)
-          }
-     
-    },
-    "exclude": [ // 要排除的文件
-        "node_modules",
-        "**/node_modules/*"
-    ],
-    "checkJs": false, // 启用javascript文件的类型检查
-    "baseUrl": "*", // 解析非相关模块名称的基础目录
-    "paths": {
-        "utils": [
-            "src/utils/*"
-        ] // 指定相对于baseUrl选项计算的路径映射，使用webpack别名，智能感知路径
-    },
-}
-```
-
-
-
-
-
-
-
-
-
-## 2.6 加载字体
-
-
-
-
-
-
-
 ## 2.7 tc39 会议
 
 ```js
@@ -2667,46 +3993,4 @@ try {
 ```
 
 
-
-## 2.8 项目中的
-
-### 2.8.1  v-for
-
-```js
-var str1 = '';//自定义字符串,用于拼接标签
-var data = {
-    "textArr":[
-        {"grade":'一等品',"mix":'20%',"number":'200'},
-        {"grade":'准一等品',"mix":'20%',"number":'200'},
-    ],
-};
-for(let i=0;i<data.textArr.length; i++){
-    str1 += `<h1>${data.textArr[i].grade}</h1>`
-}
-document.getElementById("container").innerHTML = str1
-```
-
-
-
-### 2.8.2 懒加载  | IntersectionObserver
-
-```js
-insertsectionobsserver：减少reflow
-
-const io = new IntersectionObserver(ioes => {
-  ioes.forEach(ioe => {
-    const el = ioe.target;
-    const intersectionRatio = ioe.intersectionRatio;
-    if (intersectionRatio > 0 && intersectionRatio <= 1) {
-      console.log("能看见元素")
-    }else{
-        console.log("看不见")
-    }
-    el.onload = el.onerror = () => io.unobserve(el);
-  });
-});
-const imgs = Array.from(document.querySelectorAll('#user-content--getboundingclientrect'));
-imgs.forEach(item => io.observe(item))
-
-```
 

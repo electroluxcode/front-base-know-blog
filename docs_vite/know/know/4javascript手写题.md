@@ -95,6 +95,27 @@ const curryObject = (fn) => {
         };
     };
 };
+
+
+
+function curry(fn) {
+  // curriedFn 为柯里化生产的新函数
+  // 为什么不使用匿名函数？因为如果传入参数 args.length 小于 fn 函数的形参个数 fn.length，需要重新递归
+  return function curriedFn(...args) {
+    if (args.length < fn.length){
+      return function() {
+        // 之前传入的参数都储存在 args 中
+        // 新函数参入参数在 arguments，因为 arguments 并非真正的数组需要 Array.from() 转换成数组
+        // 递归执行，重复之前的过程
+        return curriedFn(...args.concat(Array.from(arguments)))
+      }
+    }
+    return fn(...args)
+  }
+}
+
+
+
 ```
 
 
@@ -567,118 +588,7 @@ console.log(flatArray(arr))
 
 
 
-## 4.19 LRU
 
-```js
-链表
-function ListNode(val, next = null) {
-    this.val = val;
-    this.next = next;
-}
-/*
-	思路：构建双向链表（时间顺序）+ hash（取值）
-	1. 初始化 双向链表(key value next prev) 和 LRU(curSize capacity listNodeMap head tail)
-	2. 定义get方法，用到的放到最前面去（）
-	3. put方法，类似于没有就增加addToHead（直接手动添加到头，注意cursize加上去了，如果hash的数据满了，删掉最后一个节点），有就moveToHead（删除节点添加）
-	
-	像是删掉hash里面的东西特别简单就是Reflect.deleteProxxx(deleteNode,deleteNode.key)
-*/
-
-//双向链表
-class ListNodeStruct{
-    constructor(key,value){
-        this.key = key 
-        this.value = value
-        this.next = null
-        this.prev = null
-    }
-}
-
-class LRUCache{
-    constructor(capacity){
-       this.capacity = capacity;
-        //记录LRUCache 当前的length 
-        this.curSize = 0;
-        // 定义一个 hash 表
-        this.listNodeMap = {}
-        //为了方便我们一般来说，会定义一个头尾节点
-        this.head = new ListNodeStruct(-1, -1)
-        this.tail = new ListNodeStruct(-1, -1)
-        //链表的头部指向尾部
-        this.head.next = this.tail
-        this.tail.prev = this.head 
-    }
-    print(){
-        console.log(this.listNodeMap)
-    }
-    get(key){
-        let node = this.listNodeMap[key]
-        if(node){
-            //移到前面去
-            this.moveToHead(node)
-            return node.value
-        }else{
-            return -1
-        }
-    }
-    put(key,value){
-       	let node = this.listNodeMap[key]
-        if (node) {
-            //如果存在，移到双向链表的前面并且重新赋值
-            node.value = value
-            this.moveToHead(node)
-        } else {
-            let listNode = new ListNodeStruct(key, value)
-            //插入
-            this.listNodeMap[key] = listNode;
-            this.addToHead(listNode)
-        }
-    }
-    moveToHead(node){
-        //this.removeFromList(node)
-    	//this.addToHead(node)
-         //从现在的节点删除
-        node.next.prev = node.prev
-        node.prev.next = node.next
-        //添加到头
-        node.prev = this.head
-        node.next = this.head.next
-        this.head.next.prev = node;
-        this.head.next = node
-    }
-    addToHead(node){
-        this.curSize++;
-        node.prev = this.head
-        node.next = this.head.next
-        this.head.next.prev = node;
-        this.head.next = node
-        //删除最后一个
-        if (this.curSize > this.capacity) {
-            //因为要key值，所以多写了几行
-            //    this.tail.prev.prev.next = this.tail;
-            //    this.tail.prev = this.tail.prev.prev
-            let deleteNode = this.tail.prev;
-            let deletePrevNode = this.tail.prev.prev;
-
-            deletePrevNode.next = this.tail;
-            this.tail.prev = deletePrevNode;
-            this.curSize--;
-            Reflect.deleteProperty(this.listNodeMap, deleteNode.key)
-        }
-    }
-}
-
-// 使用
-let temp  =new LRUCache(5)
-temp.put(1,"害1")
-temp.put(2,"我2")
-temp.put(3,"害3")
-temp.print()
-
-
-
-
-```
 
 
 
@@ -744,6 +654,16 @@ new myPromise((resolve, reject) => {
 
 
 ```
+
+
+
+
+
+```
+
+```
+
+
 
 
 
@@ -988,7 +908,122 @@ function isSymmetric(root: TreeNode | null): boolean {
 
 
 
-## 4.22 通用方法
+## 4.22 算法
+
+### 4.22.0 lru 
+
+```js
+链表
+function ListNode(val, next = null) {
+    this.val = val;
+    this.next = next;
+}
+/*
+	思路：构建双向链表（时间顺序）+ hash（取值）
+	1. 初始化 双向链表(key value next prev) 和 LRU(curSize capacity listNodeMap head tail)
+	2. 定义get方法，用到的放到最前面去（）
+	3. put方法，类似于没有就增加addToHead（直接手动添加到头，注意cursize加上去了，如果hash的数据满了，删掉最后一个节点），有就moveToHead（删除节点添加）
+	
+	像是删掉hash里面的东西特别简单就是Reflect.deleteProxxx(deleteNode,deleteNode.key)
+*/
+
+//双向链表
+class ListNodeStruct{
+    constructor(key,value){
+        this.key = key 
+        this.value = value
+        this.next = null
+        this.prev = null
+    }
+}
+
+class LRUCache{
+    constructor(capacity){
+       this.capacity = capacity;
+        //记录LRUCache 当前的length 
+        this.curSize = 0;
+        // 定义一个 hash 表
+        this.listNodeMap = {}
+        //为了方便我们一般来说，会定义一个头尾节点
+        this.head = new ListNodeStruct(-1, -1)
+        this.tail = new ListNodeStruct(-1, -1)
+        //链表的头部指向尾部
+        this.head.next = this.tail
+        this.tail.prev = this.head 
+    }
+    print(){
+        console.log(this.listNodeMap)
+    }
+    get(key){
+        let node = this.listNodeMap[key]
+        if(node){
+            //移到前面去
+            this.moveToHead(node)
+            return node.value
+        }else{
+            return -1
+        }
+    }
+    put(key,value){
+       	let node = this.listNodeMap[key]
+        if (node) {
+            //如果存在，移到双向链表的前面并且重新赋值
+            node.value = value
+            this.moveToHead(node)
+        } else {
+            let listNode = new ListNodeStruct(key, value)
+            //插入
+            this.listNodeMap[key] = listNode;
+            this.addToHead(listNode)
+        }
+    }
+    moveToHead(node){
+        //this.removeFromList(node)
+    	//this.addToHead(node)
+         //从现在的节点删除
+        node.next.prev = node.prev
+        node.prev.next = node.next
+        //添加到头
+        node.prev = this.head
+        node.next = this.head.next
+        this.head.next.prev = node;
+        this.head.next = node
+    }
+    addToHead(node){
+        this.curSize++;
+        node.prev = this.head
+        node.next = this.head.next
+        this.head.next.prev = node;
+        this.head.next = node
+        //删除最后一个
+        if (this.curSize > this.capacity) {
+            //因为要key值，所以多写了几行
+            //    this.tail.prev.prev.next = this.tail;
+            //    this.tail.prev = this.tail.prev.prev
+            let deleteNode = this.tail.prev;
+            let deletePrevNode = this.tail.prev.prev;
+
+            deletePrevNode.next = this.tail;
+            this.tail.prev = deletePrevNode;
+            this.curSize--;
+            Reflect.deleteProperty(this.listNodeMap, deleteNode.key)
+        }
+    }
+}
+
+// 使用
+let temp  =new LRUCache(5)
+temp.put(1,"害1")
+temp.put(2,"我2")
+temp.put(3,"害3")
+temp.print()
+
+
+
+
+```
+
+
 
 ### 4.22.1 dfs
 
@@ -1374,4 +1409,14 @@ console.log(res)
 
 
 ```
+
+
+
+
+
+## 4.31  算法
+
+
+
+
 

@@ -252,6 +252,7 @@ window.a = 1
 4. last-modified的局限
    时间戳可能因为时区不一样而产生误差
    last-modified无法解决文件被频繁修改，但文件内容未被修改的场景，所以提出基于文件内容加密的Etags
+5. 200 from disk cache 和 304 的 区别
 
 
 

@@ -5,6 +5,8 @@ npx pagefind --source ./docs_vite
 
 style={{background:'red'}} 类似于这种不能直接写进入不然会报错
 
+2023/8/23 添加docker运维cicd示例 | 添加代码优化示例
+
 2023/4/15 添加shell和ffmpeg 常用指令的学习
 
 2023/4/10 分解webpack 生命周期 + 添加web component的学习。添加electron的学习

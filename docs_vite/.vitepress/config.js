@@ -85,12 +85,15 @@ export default defineConfig({
             { text: "nginx", link: "/know/框架/6nginx" },
             { text: "python", link: "/know/框架/7python" },
             { text: "ffmpeg", link: "/know/框架/8ffmpeg" },
-            { text: "shell", link: "/know/框架/9shell" },
+            { text: "tensorFlow", link: "/know/优化/7tensorFlow" },
+            { text: "mediapipe", link: "/know/优化/8mediapipe" },
             { text: "aframe", link: "/know/框架/10aframe" },
             { text: "逆向数据crawl", link: "/know/框架/11逆向数据crawl" },
             { text: "threejs", link: "/know/框架/12threejs" },
+
+       
             { text: "13electron", link: "/know/框架/13electron" },
-            { text: "逆向数据crawl", link: "/know/框架/11逆向数据crawl" },
+            
           ],
         },
         {
@@ -102,9 +105,11 @@ export default defineConfig({
             { text: "webpack", link: "/know/优化/2webpack" },
             { text: "算法", link: "/know/优化/3算法" },
             { text: "性能优化", link: "/know/优化/4性能优化" },
-            { text: "组件库构造", link: "/know/优化/5组件库构造" },
+            { text: "组件库构造", link: "/know/优化/5npm,组件库构造" },
             { text: "webrtc", link: "/know/优化/6webrtc" },
-            { text: "tensorFlow", link: "/know/优化/7tensorFlow" },
+            { text: "wasm", link: "/know/优化/9.wasm" },
+            { text: "webcomponent", link: "/know/优化/11.webcomponent" },
+            { text: "pwa", link: "/know/优化/12.pwa" }, 
           ],
         },
 
@@ -137,7 +142,7 @@ export default defineConfig({
         text: "项目文档",
           collapsed: false,
           items: [
-            { text: "java dump", link: "/project/javadump分析" },
+            { text: "java dump", link: "/project/图表绘制" },
       ]}],
       "/supper/": [
         {

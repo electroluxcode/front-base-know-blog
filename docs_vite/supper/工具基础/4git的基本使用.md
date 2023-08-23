@@ -8,6 +8,19 @@
 
 ```
 https://git-scm.com/downloads
+git pull 拉取远程仓库
+git add . 跟踪所有改动的文件
+git commit -m "" 提交改动到本地仓库
+git push 推送到远程仓库
+git checkout <branch> 切换分支
+git clone/init 初始化
+git log 查看历史
+git revert <commit> 撤销指定提交
+
+
+
+
+
 ```
 
 git中有三类文件
@@ -221,6 +234,12 @@ git push origin 0.0.2
 
 ## 4.8 合并冲突
 
+```js
+git pull 和 git fetch + git merge 但是git fetch可以看到更新情况，也就更安全
+```
+
+
+
 在我们直接下载并且进行提交的时候，有时候啊会报错
 
 ```
@@ -290,6 +309,108 @@ git push origin zp_dev
 
 
 
+## 4.10 设置github 的 代理
+
+### http 
+
+v2ray 找到可以用的节点。然后 设置 =》 参数设置，然后
+
+
+
+```shell
+git config --global http.https://github.com.proxy socks5://127.0.0.1:10808
+
+# 取消 代理
+git config --global --unset http.proxy
+git config --global --unset    http.https://github.com.proxy
+```
+
+
+
+### 设置ssh代理（终极解决方案）
+
+
+https代理存在一个局限，那就是没有办法做身份验证，每次拉取私库或者推送代码时，都需要输入github的账号和密码，非常痛苦。
+设置ssh代理前，请确保你已经设置ssh key。可以参考[在 github 上添加 SSH key](https://link.zhihu.com/?target=https%3A//tjfish.github.io/posts/%E5%9C%A8github%E4%B8%8A%E6%B7%BB%E5%8A%A0SSH-key/) 完成设置
+更进一步是设置ssh代理。只需要配置一个config就可以了。
+
+```bash
+# Linux、MacOS
+vi ~/.ssh/config
+# Windows 
+到C:\Users\your_user_name\.ssh目录下，新建一个config文件（无后缀名）
+```
+
+
+将下面内容加到config文件中即可
+
+对于windows用户，代理会用到connect.exe，你如果安装了Git都会自带connect.exe，如我的路径为C:\APP\Git\mingw64\bin\connect
+
+```text
+#Windows用户，注意替换你的端口号和connect.exe的路径
+ProxyCommand "C:\APP\Git\mingw64\bin\connect" -S 127.0.0.1:51837 -a none %h %p
+
+#MacOS用户用下方这条命令，注意替换你的端口号
+#ProxyCommand nc -v -x 127.0.0.1:51837 %h %p
+
+Host github.com
+  User git
+  Port 22
+  Hostname github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\Your_User_Name\.ssh\id_rsa"
+  TCPKeepAlive yes
+
+Host ssh.github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\Your_User_Name\.ssh\id_rsa"
+  TCPKeepAlive yes
+```
+
+
+保存后文件后测试方法如下，返回successful之类的就成功了。
+
+```text
+# 测试是否设置成功
+ssh -T git@github.com
+```
+
+
+
+
+
+## 4.11 github 提 issue 
+
+首先 fork 一下，然后 git clone fork 的 仓库。然后 切换分支 提交 分支到自己的地方 。就可以去他的项目提 pr了
+
+
+
+
+
+
+
+## 4.12 git hook
+
+```js
+githook是原理是.git文件夹里面有hooks里面有很多hook，我们只需要写bash脚本，特定的时间就会做特定的事情
+husty会自定义目录执行特定时间脚本（主要是precommit)
+```
+
+
+
+## 4.13 cherry-pick
+
+把指定的[commit](https://so.csdn.net/so/search?q=commit&spm=1001.2101.3001.7020)，拉到一个当前的分支上。
+
+```js
+ git cherry-pick commitID
+```
+
+
+
 
 
 
@@ -314,3 +435,33 @@ git checkout -t origin/website_shibo_1.0.0 就可以了
 
 ```
 
+
+
+
+
+## 规范 
+
+目前行业最为广泛规范是 Conventional Commits[1] 很多项目包括 Auglar 也在使用。
+
+可以根据以上规范制定适合自己团队的规范，例如：
+
+JIRA-1234 feat: support for async execution
+
+^-------^ ^--^: ^-------------------------^
+|         |     |
+|         |     +--> Summary in present tense.
+|         |
+|         +--> Type: feat, fix, docs, style, refactor, perf, test or chore.
+|
++--> Jira ticket number
+
+Type 类型必须是下面之一，并且为小写:
+
+    feat: 修改/增加新功能
+    fix: 修改bug的变更
+    docs: 文档相关变更
+    style: 不影响代码含义的变更(空白、格式、缺少符号等)
+    refactor: 代码重构变更
+    perf: 改进性能的变更
+    test: 添加/修改现有的测试
+    chore: Build, .gitignore或辅助工具、库(如文档生成)等变更

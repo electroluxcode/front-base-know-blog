@@ -159,7 +159,7 @@ transform转换：位移、缩放、旋转、倾斜
 flex布局
 媒体查询
 
-### 5.1.7 hsl颜色表示法(色值，饱和度，亮度，透明度)
+### 5.1.7 hsl颜色(色值，饱和度，亮度，透明度)
 
 ```js
 越接近0，颜色越深。约接近255，越来越浅
@@ -196,7 +196,7 @@ div.card {
 
 
 
-### 5.1.10 (resize: both + overflow)拖动大小 -2个注意
+### 5.1.10 (resize: both + overflow)拖动大小
 
 ```css
 .card{
@@ -598,6 +598,185 @@ body:has(.shell:hover){
 
 
 
+### 5.1.34 动画的暂停 和 恢复
+
+```css
+.container{
+	animation : rotate 20s  linear paused infinite;
+	
+}
+.container:hover{
+	animation-play-state : running /*paused*/
+}
+
+```
+
+
+
+
+
+
+
+### 5.1.35  加载字体
+
+```js
+--0.使用
+@font-face {
+  font-family: "led";
+  src: url("DS-DIGI.TTF");
+}
+
+.card-panel-num {
+  font-family: led;
+  font-size: 25px
+}
+
+
+--1.简单优化
+@font-face {
+  font-family: "sans-medium";
+  src: url(./font/NotoSansSC-Medium.otf);
+    /*表示文档不会block(极短的阻塞期< 1s)，直接使用备选字体，远程字体下载完毕后再进行替换。*/
+  font-display: swap;
+}
+
+
+--2.分块加载（https://github.com/HoPGoldy/google-font-splitter）
+浏览器只会在页面使用了该范围中的字符时才会加载对应的字体“分片”。也就是说页面初始化时给浏览器一个目录，在页面要渲染字体时再去根据目录加载所需的字体文件。这不就是字体文件的按需加载
+
+类似与这样
+@font-face {
+  font-family: "sans-regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(s/notosanssc/v26/k3kXo84MPvpLmixcA63oeALhLOCT-xWNm8Hqd37g1OkDRZe7lR4sg1IzSy-MNbE9VH8V.4.woff2)format("woff2");
+  unicode-range: U+1f1e9-1f1f5, U+1f1f7-1f1ff, U+1f21a, U+1f232, U+1f234-1f237, U+1f250-1f251, U+1f300, U+1f302-1f308, U+1f30a-1f311, U+1f315, U+1f319-1f320, U+1f324, U+1f327, U+1f32a, U+1f32c-1f32d, U+1f330-1f357, U+1f359-1f37e
+}
+
+
+```
+
+
+
+### 5.1.36 Flex布局
+
+#### 5.12.0 flex-direction(排列方式)
+
+```js
+--1.row 横着排列（列） 
+--2.column 竖着排列（行）
+```
+
+
+
+#### 5.1.36.1 align-items(竖轴对齐) |  justify-content (横轴对齐)
+
+```js
+--1.flex-start/end/ :朝左/右对齐
+--2. space-evenly/space-between ：平分空间/两端对齐
+--3.居中
+```
+
+#### 5.1.36.2 flex的属性
+
+```js
+flex的属性：放大，缩小，本身。
+flex-basis, flex-grow和flex-shrink。
+可以按照flex-grow,flex-shrink,flex-basis的顺序使用flex简写属性
+```
+
+
+
+
+
+
+
+### 5.1.37 Grid布局
+
+#### 5.1.37.1  grid-template-columns(横向)
+
+```css
+//3个一行的布局 ，也可以用fr来进行布局，类似于百分比
+grid-template-columns: 100px 100px 100px;
+```
+
+
+
+#### 5.1.37.2 grid-gap(间隔)
+
+```css
+/*行之间间隙10px ，列之间间隔0px*/
+grid-gap:10px 0px;
+
+```
+
+
+
+
+
+
+
+
+
+#### 5.1.37.3 grid-area | grid-template-areas(范围)
+
+```html
+ <style>
+     .container{
+        display: grid;
+        grid-template-areas:
+          "header header header"
+          "sidebar content content"
+          "footer footer footer";
+     }
+	/*然后制定一下header sidebar content 和 footer*/
+     .header{
+         grid-area: header;
+         width: 98%;
+         height: 100px;
+         background: red;
+         margin: 10px;
+         grid-area: header;
+     }
+ </style>
+```
+
+
+
+
+
+#### 5.1.37.4 align-items(竖轴对齐) |  justify-content (横轴对齐)
+
+```css
+align-items: center/end/space-between;
+```
+
+
+
+
+
+
+
+### 5.1.38  css写错会怎么样
+
+不管他，继续解析下一个css样式
+
+
+
+
+
+
+
+### 5.1.39 包含块
+
+包含快 是一个 排列区域。一个父盒子 有四个盒子 margin | padding | border | content
+
+- float 或者常规元素: 包含快是 父盒子的 content
+- abolution绝对定位元素：包含快 是 外层定位元素的padding 区域
+
+
+
 
 
 ## 5.2 快问快答（效果实现）
@@ -990,7 +1169,7 @@ img 的对齐是baseline
 
 
 
-## 5.4 svg原理
+## 5.4 svg原理 | icon 实操
 
 
 
@@ -1070,6 +1249,89 @@ polyline.points | stroke(折线图)，polygon.points（乱七八糟的东西）�
 
 </html>
 ```
+
+
+
+
+
+
+
+### 5.4.5 unicode | 引入icon
+
+直接添加多色图标会自动去色（因为是当作字体来用的）
+
+ Unicode 书写不直观，语意不明确的问题。
+
+```js
+1.@font-face ，和.iconfont引入
+2.在span标签中添加&#x33，class添加xxxx。
+像<span class="iconfont">&#x33;</span> 引入
+```
+
+
+
+
+
+### 5.4.6 font class  | 引入icon
+
+本质上还是使用的字体，所以多色图标还是不支持的。
+
+语意明确，书写更直观
+
+```js
+1.拷贝css代码 import .css
+2.挑选图标并且获取类型，应用于页面<i class="iconfont icon-xxx"></i>
+```
+
+
+
+### 5.4.7 symbol  | 引入icon
+
+```js
+原理：symbol元素用来定义一个图形模板对象，它可以用一个use元素实例化。
+
+symbol元素对图形的作用是在同一文档中多次使用，只有use才能够实现
+```
+
+
+
+支持多色图标
+
+支持像字体那样，通过`font-size`,`color`来调整样式。
+
+注意一下，阿里iconfont的一些图表去色后（去色是为了）
+
+```js
+1.引入js代码 iconfont.js，别的都丢掉都可以
+2.引入css代码
+<style type="text/css">
+    .icon {
+       width: 1em; height: 1em;
+       vertical-align: -0.15em;
+       fill: currentColor;
+       overflow: hidden;
+    }
+</style>
+3.类似于
+    <svg class="icon svg-icon" aria-hidden="true">
+        <use xlink:href="#icon-jijin"></use>
+      </svg>
+      <svg class="icon svg-icon" aria-hidden="true">
+        <use xlink:href="#icon-cunkuan"></use>
+      </svg>
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1557,45 +1819,22 @@ b站的弹幕不受遮挡的源码。ai生成模板
 
 
 
-## 5.10 加载字体
+### 5.9.2 pr |  webkit-tap-highlight-color
+
+解决移动端点击tabs有色块的问题
 
 ```js
---0.使用
-@font-face {
-  font-family: "led";
-  src: url("DS-DIGI.TTF");
-}
-
-.card-panel-num {
-  font-family: led;
-  font-size: 25px
-}
-
-
---1.简单优化
-@font-face {
-  font-family: "sans-medium";
-  src: url(./font/NotoSansSC-Medium.otf);
-    /*表示文档不会block(极短的阻塞期< 1s)，直接使用备选字体，远程字体下载完毕后再进行替换。*/
-  font-display: swap;
-}
-
-
---2.分块加载（https://github.com/HoPGoldy/google-font-splitter）
-浏览器只会在页面使用了该范围中的字符时才会加载对应的字体“分片”。也就是说页面初始化时给浏览器一个目录，在页面要渲染字体时再去根据目录加载所需的字体文件。这不就是字体文件的按需加载
-
-类似与这样
-@font-face {
-  font-family: "sans-regular";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(s/notosanssc/v26/k3kXo84MPvpLmixcA63oeALhLOCT-xWNm8Hqd37g1OkDRZe7lR4sg1IzSy-MNbE9VH8V.4.woff2)format("woff2");
-  unicode-range: U+1f1e9-1f1f5, U+1f1f7-1f1ff, U+1f21a, U+1f232, U+1f234-1f237, U+1f250-1f251, U+1f300, U+1f302-1f308, U+1f30a-1f311, U+1f315, U+1f319-1f320, U+1f324, U+1f327, U+1f32a, U+1f32c-1f32d, U+1f330-1f357, U+1f359-1f37e
-}
-
-
+WebkitTouchCallout: 'none',
+WebkitTapHighlightColor: 'transparent',
 ```
+
+
+
+
+
+
+
+
 
 
 
@@ -1685,98 +1924,7 @@ b站的弹幕不受遮挡的源码。ai生成模板
 
 
 
-## 5.12 Flex布局
 
-### 5.12.0 flex-direction(排列方式)
-
-```js
---1.row 横着排列（列） 
---2.column 竖着排列（行）
-```
-
-
-
-### 5.12.1 align-items(竖轴对齐) |  justify-content (横轴对齐)
-
-```js
---1.flex-start/end/ :朝左/右对齐
---2. space-evenly/space-between ：平分空间/两端对齐
---3.居中
-```
-
-### 5.12.2 flex的属性
-
-```js
-flex的属性：放大，缩小，本身。
-flex-basis, flex-grow和flex-shrink。
-可以按照flex-grow,flex-shrink,flex-basis的顺序使用flex简写属性
-```
-
-
-
-
-
-
-
-## 5.13 Grid布局
-
-### 5.13.1  grid-template-columns(横向)
-
-```css
-//3个一行的布局 ，也可以用fr来进行布局，类似于百分比
-grid-template-columns: 100px 100px 100px;
-```
-
-
-
-### 5.13.2 grid-gap(间隔)
-
-```css
-/*行之间间隙10px ，列之间间隔0px*/
-grid-gap:10px 0px;
-
-```
-
-
-
-
-
-
-
-
-
-### 5.13.3 grid-area | grid-template-areas(范围)
-
-```html
- <style>
-     .container{
-        display: grid;
-        grid-template-areas:
-          "header header header"
-          "sidebar content content"
-          "footer footer footer";
-     }
-	/*然后制定一下header sidebar content 和 footer*/
-     .header{
-         grid-area: header;
-         width: 98%;
-         height: 100px;
-         background: red;
-         margin: 10px;
-         grid-area: header;
-     }
- </style>
-```
-
-
-
-
-
-### 5.13.4 align-items(竖轴对齐) |  justify-content (横轴对齐)
-
-```css
-align-items: center/end/space-between;
-```
 
 
 
@@ -1842,4 +1990,154 @@ https://www.mdui.org/design/resources/layout-templates.html#layout-templates-tab
 ```
 --1.模拟3d 效果，给人一种可以按下去的感觉
 ```
+
+
+
+
+
+
+
+## 5.15 大屏无敌的布局
+
+
+
+建议 grid 布局梭哈
+
+
+
+```css
+.screem_container {
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+
+    /* // grid-row-gap: 5px; // 行间距
+    // grid-column-gap: 5px; // 列间距 */
+}
+
+.item:nth-child(2) {
+    // background: green;
+  
+    //  横着 占的 位置（开始 然后span 是 横跨几个单位） | 竖着 占的位置
+    grid-column: 2 / span 1;
+    grid-row: 1 / span 2;
+  }
+```
+
+
+
+<img src ="./img/css_grid_screem.png">
+
+
+
+
+
+
+
+## 5.16 优先级
+
+
+
+
+
+### 5.16.1 级联层 |  layer 优先级
+
+2022 年出的东西
+
+layer 越`后`优先级越高，但是总的来说，还是没有被 layer 包裹的样式 好一点
+
+layer 中 important 越前优先级越高
+
+
+
+```css
+@layer A { a { color: red; } }
+@layer B { a { color: orange; } }
+@layer  { a { color: unname; } }
+@layer C { a { color: yellow; } }
+a { color: green; } /* 未被 @layer 包裹的样式 */ 
+
+
+上述规则的排序是：
+
+未被 @layer 包裹的样式 >  @layer C > 匿名层 > @layer B > @layer A
+    
+!impoetant 的 优先级 还是最高
+但是要注意 !important 下样式优先级的规则与非 !important 正常状态下刚好相反。这是因为css 的  CSS Cascading 规定 大的 
+    
+    
+
+```
+
+- Normal user agent declarations
+- Normal user declarations
+
+  
+
+```css
+
+@layer B, C, A 就可以 在一开始 优先级
+    
+emmm 举个例子。我们需要引入第三方库的 CSS，为了便于管理，或者便于覆盖其中的一些样式，在之前，只能通过写优先级更高的class去覆盖，或者通过!important去覆盖。
+有了 @layer 之后，可以这样写：
+​```
+@import(elementUI.css) layer(elementUI);
+@import(page.css) layer(page);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 5.16.2 优先级
+
+- 资源顺序(后的覆盖前面的)
+- 优先级(权重)
+- 重要程度
+
+
+
+
+
+
+
+
+
+## 5.17 少见特性
+
+
+
+### 5.17.1  css新单位
+
+- d 是动态修饰符号 ( URL + 刘海屏幕屏幕)
+
+- l是 large 
+
+- s是small 都是表示移动端自适应的方法
+- vmin/vmax 也不错 但是他是自适应平台的
+
+```js
+.container{
+    height: 100svh;
+    width: 100lvw;
+    background: red;
+}
+```
+
+
+
+
+
+
 

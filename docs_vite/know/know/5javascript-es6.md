@@ -124,7 +124,7 @@ console.log(target) // {a:1, b:2, c:3}
 // 箭头函数
 ```
 
-## 3.4.Set和Map
+## 3.4.Set | Map
 
 ```js
 let s = new Set()
@@ -134,7 +134,7 @@ s.has(1) //false
 s.clear()
 
 let m = new Map()
-m.set('foo', 2)
+m.set('foo', 2) // 这种 赋值 跟 
 m.set('bar', 'hello')
 console.log(m) //Map(2) { 'foo' => 2, 'bar' => 'hello' }
 console.log(m.has('foo')) // true
@@ -144,7 +144,7 @@ m.clear()
 console.log(m.size) // 0
 ```
 
-## 3.5 symbol  | set | map | weakmap  | for in of
+## 3.5 symbol  | map | weakmap  | for in of
 
 ```ts
 --1.symbol
@@ -170,7 +170,6 @@ Object.getOwnPropertySymbols(temp);
 temp[Symbol('test')]; // undefined
 
 
---2.Set 
 
 --3. map | weakmap
 

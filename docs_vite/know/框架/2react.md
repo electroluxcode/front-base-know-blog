@@ -367,34 +367,6 @@ symbol
 
 
 
-## 2.0 。。。。
-
-### 2.0.1 vue |  react 区别
-
-<div class="test">    
-    <div class="test2">
-    </div>
-</div>
-
-vue的共同点
-
-```js
---1.数据驱动视图
---2.组件化
---3.都使用了 Virtual DOM + Diff算法 
-```
-
-
-
-不同点
-
-```js
---1.响应式原理：vue自动收集依赖，react 是 setstate
---2.组件写法差异：vue是template 的单文件组件格式。react 是 all in js
---3.组件的渲染 vue是默认及进行 visual dom 的优化 。通过shouldComponentUpdate这个生命周期方法可以进行控制，但Vue将此视为默认的优化。
---4.官方差异：没有官方系统解决方案，选型成本高
-```
-
 
 
 ### 2.0.2 jsx | 虚拟dom 
@@ -439,7 +411,7 @@ alert(countR.current)
 
 
 
-## 2.1 react实操基础
+## 2.1 react 基础知识
 
 ### 2.1.-2 dom元素
 
@@ -750,9 +722,17 @@ const [count, setCount] = useState(0);
 
 
 
-### 2.1.7 useMemo | useCallback | memo | 纯组件
+### 2.1.7 useMemo | useCallback | React.memo | 纯组件
 
 ```jsx
+React.memo：用来包装 组件
+hook.memoizedState = [nextValue, nextDeps]; 来缓存
+在update的时候有一个  判断nextValue, nextDeps是不是空然后比较 prevDeps，nextDeps
+
+useCallback:返回一个函数
+
+useMemo 重新计算值
+
 render的情况
 1.更新
 2.初始化
@@ -772,9 +752,8 @@ render的情况
 
 负优化的情况：
 
-memo 一直在浅比较，这一部分也会消耗性能（mount和update）。
-memo在mount中有一个 hook.memoizedState = [nextValue, nextDeps]; 来缓存
-在update的时候有一个  判断nextValue, nextDeps是不是空然后比较 prevDeps，nextDeps
+
+
 
 --1.usememo case1：
 单独在子组件中使用
@@ -1012,7 +991,7 @@ initialState 参数只会在组件的初始渲染中起作用
 
 
 --2.useRef
-useRef能够同步更新（横跨生命周期）
+useRef能够同步更新数据（横跨生命周期），但是视图不会更新
 
 --3.useReducer
 接受一个fn（这里面第一个是state，第二个是action）和一个初始变量。返回现在变量和一个 fn。
@@ -1570,7 +1549,28 @@ render() {
 
 
 
+### 2.1.16  为什么 hooks 不能写在循环或者条件判断语句里
 
+```js
+每次调用一次 useState, stateQueue 就会存储一个值
+
+let stateQueue = []; // 用于存放每个useState返回值。
+let stateIndex = -1;  //给每个 useState的返回值一个序号。
+function useState(initState) {
+  stateIndex++;
+  stateQueue[stateIndex] = stateQueue[stateIndex] || initState;
+  const currentIndex = stateIndex
+  function setState(newState) {
+    stateQueue[currentIndex] = newState;
+    reRender(); //组件重渲染
+  }
+  return [stateQueue[stateIndex],setState]
+}
+
+例如 我们 在 if 中 加了一个usestate 然后, 界面就会reRender 被调用。stateIndex重新变为-1，App组件重渲染.那么  stateQueue[stateIndex] || initState 就会 永远是 一开始的 值 
+
+
+```
 
 
 
@@ -1724,7 +1724,64 @@ React 给 document 挂上事件监听；DOM 事件触发后冒泡到 document；
 
 
 
-### 2.1.26 setstate,render 顺序和原因
+### 2.1.26 setstate | render | memo | ref 缓存 顺序和原因
+
+```js
+/* eslint-disable react-hooks/rules-of-hooks */
+// @ts-nocheck
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
+import React from "react";
+
+const App = () => {
+
+    const [i, setI] = useState(1);
+    const ref = useRef(1)
+    /**
+     * @des 这佐证了 setstate 会在 下一个循环
+     * 渲染顺序 
+     * ref 马上 就不会被缓存
+     * setstate 下一个整个循环 不会被缓存
+     * 
+     */
+    if(i>2){
+        const [ib, setIb] = useState(1);
+        console.log(ib)
+    }
+    let add = () =>{
+        a.current = null
+        setI(i+1)
+        console.log(i)
+        console.log(add === a.current, "add === a.current")
+        console.log(cbAdd ===b.current, "cbAdd ===b.current")   
+    }
+    let refUpdate = () =>{
+        ref.current = ref.current+1
+        console.log(ref.current)
+        setI(i+1)
+    }
+    var a = useRef(add);
+    // const cbAdd = useCallback(add, [ref.current]);
+    const cbAdd = useMemo(() => add, [ref.current]);
+    let b = useRef(cbAdd);
+
+    useEffect(()=>{
+        // setI(i+1)
+       
+    },[])
+    return (
+        <div id="App">
+            <hr></hr>
+            i: {i}
+            <button onClick={add}> state </button>
+
+            <button onClick={refUpdate}> ref</button>
+        </div >)
+};
+
+export default App;
+
+
+```
 
 
 
@@ -1905,6 +1962,26 @@ npm install @reduxjs/toolkit  这玩意太难用，不如我自己封装
 ```
 
 
+
+### 2.1.29  函数组件定义 |  茴香豆有几种写法
+
+```tsx
+import React ,{FC} from "react"
+interface ApiManageProps { }
+let render: React.FC<ApiManageProps> = () => {
+    return (<>
+        这里是render
+    </>)
+}
+
+interface ApiManageProps { }
+let render: FC<ApiManageProps> = () => {
+    return (<>
+        这里是render
+    </>)
+}
+
+```
 
 
 
@@ -2239,7 +2316,7 @@ export { ClassComponent }
 
 
 
-## 2.5 hook组件
+## 2.5 hook组件(常用)
 
 
 
@@ -2261,7 +2338,7 @@ export { ClassComponent }
 
 定义响应式数据可以用usestate
 
-### 2.5.2 父组件
+#### 2.5.2.1 父组件
 
 
 
@@ -2286,7 +2363,7 @@ const FunctionComponent = () => {
 export { FunctionComponent }
 ```
 
-### 2.5.3 子组件
+#### 2.5.2.2 子组件
 
 ```jsx
 import React from 'react'
@@ -2475,7 +2552,7 @@ const child = momo(()=>{
 
 
 
-### useCallback 也有类似的效果，不过这个是函数的效果
+useCallback 也有类似的效果，不过这个是函数的效果
 
 使用很简单，就是 在函数外面添加一个 useCallback
 
@@ -2494,11 +2571,251 @@ const child = momo(()=>{
 
 
 
+### 2.5.11 ref | useImperativeHandle
+
+一般的透传只需要定义ref然后 
+
+1. 父组件 用 useref 传给 子组件，，
+2. 然后子组件用forwardRef传递两个参数。prop和 ref
+
+useImperativeHandle 
 
 
-## 2.6.redux 的用法
+
+父组件
+
+```ts
+import React, { useEffect, useRef } from 'react'
+import RefChild from './RefChild'
+import RefChildBetter from './RefChildBetter'
+export default function Ref() {
+  const myRef = useRef(0)
+  useEffect(()=>{
+    console.log("你好:",myRef)
+  },[])
+
+  let ParentChange = (e:any)=>{
+    console.log("不推荐的组件变化了",e.target.value)
+  }
+  let ParentChangeBetter = (e:any)=>{
+    console.log("推荐的组件变化了",e.target.value)
+  }
+  
+  return (
+    <>
+     <div >Ref</div>
+     <RefChild ref={myRef} propsTest={ParentChange}></RefChild>
+     <RefChildBetter ref={myRef} propsTest={ParentChangeBetter}></RefChildBetter>
+    </>
+   
+  )
+}
+
+```
+
+子组件 
+
+```ts
+import React, { useImperativeHandle, useRef } from 'react'
+
+const FancyButton = React.forwardRef((props:any, ref:any) => {
+  let {propsTest} = props
+  console.log(propsTest)
+  let child =  useRef()
+
+  useImperativeHandle(ref, () => 
+    {
+      console.log("useImperativeHandle")
+      return {
+        child
+      }
+    }
+  );
+
+  return (
+  
+  <div >
+    官方推荐的ref用法:
+    <input ref={child} type="text" onChange={propsTest}/>
+    <button>{props.children}</button>
+  </div>
+)});
+export default FancyButton
+
+
+// export default function RefChild(props:any) {
+//   let {myRef}  = props
+//   return (
+//     <div >RefChild</div>
+//   )
+// }
+
+```
+
+
+
+1. 父组件不变
+
+2. 子组件加上useref，
+
+   ```ts
+   useImperativeHandle(ref, () => 
+       {
+         console.log("useImperativeHandle")
+         return {
+           child
+         }
+       }
+     );
+   ```
+
+   
+
+3. 然后这个子组件就可以随便用了
+
+
+
+
+
+```ts
+// React 关于 ref 转发（也叫透传）:是使用 React.forwardRef 方法实现的，该方法返回一个组件
+
+
+使用 useImperativeHandle 后，可以让父、子组件分别有自己的 ref，通过 React.forwardRef的第二个参数 将父组件的 ref 透传过来，通过 useImperativeHandle 方法来 return 然后父组件能够拿到 指定的ref。
+
+useImperativeHandle 的第一个参数是定义 current 对象的 ref，第二个参数是一个函数，返回值是一个对象，即这个 ref 的 current 对象，这样可以像上面的案例一样，通过自定义父组件的 ref 来使用子组件 ref 的某些方法
+
+useImperativeHandle(ref, createHandle, [deps])
+
+```
+
+
+
+
+
+
+
+## 2.6.redux 
+
+
+
+### 2.6.0 绘图
+
+
+
+
+
+
+
+### 2.6.0 总结 绘图
+
+
+
+
+
+<img src="./img/redux.png">
+
+
+
+
+
+### 2.6.0  基本概念 | 原则
+
+```js
+原则：单一数据源 | state 是只读 | 纯函数
+
 
 npm install @reduxjs/toolkit@1.8.6    react-redux -S
+
+# react-redux 是 react - redux 的 连接
+# react toolkit 是 redux 多了一层的封装。官方推荐 单纯的 
+# redux devtools 是 浏览器 的插件 ，可以引入一下
+
+
+示例：按大小来排序
+
+ // 跟useRudecer不一样需要单独传一个state
+--store 
+	//  (函数 接收state 和 action - 理解记忆：reduce的升级版接收和返回一样的 - redux当中的createStore | redux toolkit的  返回一个新的state)  
+	--reducer  
+    	// 最小状态(这个不要直接修改) (数据结构 随便)
+	    --state 
+        // 对状态的操作-(数据结构 {type:"",payload:""})
+    	--action 
+        
+        
+      
+// step1:定义state
+const initialState = {
+    value: 0
+};
+
+// step2：定义了一个reducer(状态如果变化的地方),传入一个state和action，跟react 的 state 是一样的
+// 肤浅的猜测：通过值比较太耗费性能了，因此我们可以通过地址来进行比较
+function counterReducer(state = initialState, action) {
+    // 重要：每一个action 都应该 包括 一个 type 字段。type的最佳实例是 在xx地方/xx操作
+    switch (action.type) {
+        case "counter/incremented":
+            return { ...state, value: state.value + 1 };
+        case "counter/decremented":
+            return { ...state, value: state.value - 1 };
+        default:
+            // 如果匹配不上我们返回默认的state
+            return state;
+    }
+}
+
+// step3：定义Store 。 在redux以前的版本中createStore | legacy_createStore (传入上面的reducer) 。
+let store = redux.createStore(counterReducer)
+
+// step4:双向绑定，通过addeventlistenr  dispatch 更新 UI 然后 通过 subscribers
+store.dispatch({type:"counter/add"})
+
+// step4:subscribe 订阅数据(如果用react-redux那么这一步可以省略)
+const render = () =>{
+    counter.innerHTML = store.getState().value
+}
+// 从 UI 开始,
+render()
+store.subscribe(render)
+
+xxx.addEventListener("click",()=>{
+    xxx.dispatch({type:"xxxx/xxx"})
+})
+
+
+```
+
+
+
+### 2.6.0 用户流程 | 数据流 | 设计思想
+
+```js
+1.
+用户：从UI开始 dispatch type 上去， 然后发送 action 给 store，接着 store 去 运行 reducer(工厂)。接着去运行state
+开发者：新建 action 和 state 接着
+
+2.数据流都是 state 传给UI,UI会调用 action，action传给state。不同组件共享一个状态那么单向数据流就会非常麻烦，我们可以用一个lifting state up（状态集成） 把数据给父组件。当我们的数据量越来越大之后，中间传递的时候可能会比较麻烦
+
+3.我们可以把共享的数据放到组件树外面。也就是redux 的基本思想，核心` trigger action `
+immutable
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```js
 npm install redux
@@ -2514,7 +2831,7 @@ npm install react-redux
 --2.2 Reducer – 这是一个确定状态将如何变化的地方。
 --2.3 Store – 整个程序的状态/对象树保存在Store中。
 --2.4 View – 只显示 Store 提供的数据。
-
+--2.5 state - 永远不要去修改，要create一个action，并且把东西dispatch发送到action，当dispatch的时候，会自动调用reducer
 ```
 
 
@@ -2660,6 +2977,267 @@ function Detail(props) {
 //格式是 connect(state映射, dispatch映射)(当前组件类)
 export default connect(reduxDataDemo, reduxFunctionDemo)(Detail)
 ```
+
+
+
+
+
+### 2.6.5 设计方法-结构
+
+```
+数据结构是 reducer(store | action) +  enhancer(这个可以用compose来组合中间件)
+动作触发是 createStore + dispatch  + compose
+```
+
+
+
+### 2.6.6 设计方法-中间件
+
+```ts
+
+let apiTest = ()=>{
+    return new Promise((resolve)=>{
+        setTimeout(() => {
+            console.log("api的请求")
+            resolve(1)
+        }, 2000);
+    })
+}
+let apiDataGet = async()=>{
+    await apiTest()
+}
+
+
+let fn2=(...args)=>{console.log("fn2执行",...args);return "fn2"}
+let fn3=(...args)=>{console.log("fn3执行",...args);return "fn3"}
+function connect(...fn){
+    // 一开始的值
+    if(fn.length===1){
+        return fn[0]
+    }
+    return fn.reduce((all,value)=>(...args)=>{
+        return value(...args)
+    })
+}
+// fn3(最后一个参数) 能拿到 最后的值
+let fnRes = connect(fn2,fn3)(main(22222))
+connect(fn2,fn3)(main(3333))
+function main(param){
+    apiDataGet()
+    console.log("这里写你的主要逻辑");
+    return param
+}
+// async function main(param){
+//     await apiDataGet()
+//     console.log("这里写你的主要逻辑");
+//     // return param
+// }
+
+console.log("fnres:",fnRes)
+```
+
+
+
+
+
+
+
+### 2.6.8 设计方法-订阅和非订阅
+
+```js
+// 订阅了之后返回一个取消订阅函数贼牛皮
+function subscribe(listener) {
+    // 添加一个回调函数
+    listeners.push(listener);
+    return function unsubscribe() {
+        // 拿到当前回调函数的索引
+        const index = listeners.indexOf(listener);
+        // 根据索引删除当前回调函数
+        listeners.splice(index, 1);
+    };
+}
+```
+
+
+
+
+
+
+
+### 2.6.9 中间件
+
+```js
+function loggerEnhancer(createStore) {
+  return function (reducer, preloadedState) {
+    const store = createStore(reducer, preloadedState);
+
+    const newDispatch = (action) => {
+      store.dispatch(action);
+      console.log('This is My Logger!');
+    };
+
+    return { ...store, dispatch: newDispatch };
+  };
+}
+```
+
+
+
+
+
+
+
+
+
+## 2.7  react-redux
+
+```shell
+npm install react-redux -S
+```
+
+
+
+### 2.7.1 useSelector | 坑 | 自动订阅 + 选择数据 | 默认
+
+```jsx
+注意像是map，会有坑。每一次都会全新刷新组件
+useselector如果不一样，那么会强制整个组件进行刷新。这个时候我们就需要用到shallowEqual 例如
+let xx = data.map((e)=>return e.id)
+ const todo = useSelector(xx,shallowEqual)  // 只要内容不变，那么这个组件就不会渲染
+
+render 和 subscribe 都会帮我们做的d
+
+import {useSelector} from "react-redux"
+// 监听 xx 有没有变化
+const selectTodos = state => {
+    return state.xx
+}
+
+
+const todoListComponent = () =>{
+    const data = useSelector(selectTodos);
+    return <>
+    	    {data}
+    </>
+}
+
+
+export default 
+
+
+```
+
+
+
+
+
+### 2.7.2 useDispatch | 触发事件
+
+```jsx
+import {useDispatch} from 'react-redux'
+
+
+const dispatch = useDispatch()
+
+return <>
+	<button onClick={()=>{
+        dispatch({type:'todos/todoadded',payload:{id:3}})
+    }}></button>    
+</>
+```
+
+
+
+
+
+let data={id:4}
+
+### 2.7.3 provide | index.js
+
+```jsx
+import { store } from './store'
+import { Provider } from 'react-redux'
+import Router from "./router/index.jsx"
+ReactDOM.createRoot(document.querySelector("#root")).render(
+    <>
+        <Provider store={store}>
+            	<App></App>
+            <Router />
+        </Provider>
+    </>
+)
+```
+
+
+
+### 2.7.4 异步 | 副作用 | 流程
+
+```js
+reducer 的 副作用 可以写在中间里面。dispatch 一个东西，他会运行所有的中间件，然后暴露出去
+用户流程是：
+ui触发事件，然后dispatch thunk/action 到middleware(dispatch 真正的事件)
+
+npm install redux-thunk
+
+类似于 
+const fetchData = (data,action) =>{
+    if(action.type=="todo/add"){
+        // settimeout(()=>{ to do },1000)
+        // xx.get().then((e)=>{console.log(e)})
+    }
+} 
+
+
+然后如果我们抽象出来封装的话就是
+// 这里用 import thunkMiddleware from 'redux-thunk' 
+/*import {createStore,applyMiddleware} from 'redux'
+import {composeWithDevtools} from 'redux-devtools-extension'
+
+const composedEnhancer = composeWithDevTools(asyncFnMiddleware(asyncFnMiddleware))
+const store = createStore(reducers,composedEnhancer)
+const play =async(dispatch,getstate)=>{
+	await new Promise((resolve)=>{
+        setTimeout(()=>{console.log("dddd")},3000)
+    })
+    dispatch({type:"play"})
+}
+store.dispatch(play)*/
+
+const asyncFnMiddleware = storeAPI => next => action =>{
+    console.log(storeAPI,next,action,typeof action)
+    if(typeof action==="function"){
+        return action(storeAPI.dispatch,storeAPI.getState)
+    }
+    return next(action)
+}
+
+//进行中间件的
+const middleEnhancer = applyMiddleware(asyncFnMiddleware)
+const store =createStore(rootReducer,middleEnhancer)
+
+// 异步函数里面才是我们真正的dispatch
+const fetchSomeData =(dispatch,getState)=>{
+    xx.then((res)=>{
+        dispatch({type:"todo/add",payload:"   "})
+        const allTodo = getState().xxx
+        console.log(allTodo)
+    })
+}
+
+store.dispatch(asyncFnMiddleware)
+
+
+
+
+
+
+```
+
+
+
+
+
+
 
 
 
@@ -2981,6 +3559,241 @@ export default defineConfig({
 });
 
 ```
+
+
+
+
+
+
+
+## 2.9 react toolkit
+
+
+
+configueStore 是为了 帮助我们简化写 store的逻辑
+
+createSlice 是为了 帮助我们简化 reducer
+
+### 2.9.1 初始化
+
+```shell
+npm install @reactjs/toolkit react-redux
+# react-redux 里面的 有一个 useSelector 和 useDispatch
+# toolkit 包括的 我们前面 中间件的 thunk和 combinereducer
+```
+
+
+
+
+
+
+
+### 2.9.2 项目结构
+
+```js
+--src/store  
+----src/store/index.ts  // 入口
+------src/store/user   // 功能模块
+------src/store/user/login.ts
+```
+
+
+
+### 2.9.3 main.tsx  | app.tsx 入口文件
+
+引入provider 和 store
+
+```tsx
+import { useRoutes} from 'react-router-dom'
+import { AppSwrapper } from './style'
+
+import routes from './router'
+import {Provider} from 'react-redux'
+import store from './store'
+
+
+
+interface Function{
+  getName:any
+}
+function App() {
+  const element = useRoutes(routes)
+  return (
+    <>
+  <Provider store={store} >
+      <AppSwrapper>{element}</AppSwrapper>
+  </Provider>
+     
+    </>
+  )
+}
+
+export default App
+```
+
+
+
+
+
+### 2.9.3  store 入口 |  index
+
+store/index.ts
+
+简单把 store 下面引入一下
+
+```tsx
+// index.ts 文件
+
+import { configureStore } from "@reduxjs/toolkit";
+import { initialReducer,} from "./user/login";
+
+// configureStore创建一个redux数据
+const store = configureStore({
+  // 合并多个Slices
+  reducer: {
+    counter: initialReducer
+  },
+});
+
+export default store;
+
+
+
+```
+
+
+
+### 2.9.3 store 内容  | createSlice |  createAsyncThunk | extraReducers  | 用户模块
+
+store/user/login.ts 这里新建user文件夹和login文件。
+
+这里面有几个关键知识点
+
+1. 原生创造 action 和 reducer
+2. 异步创造 async
+
+```ts
+// counterSlice.ts 文件
+
+import { createSlice,createAsyncThunk } from '@reduxjs/toolkit';
+
+const initialState: any = {
+    name: "22",
+    value: 0,
+    title: "redux toolkit pre"
+};
+
+
+const initialReducer = (state = initialState, action) => {
+    if (action.type === "couter/xx") {
+        return { value: state.value + 1 }
+    }
+    return { value: state.value }
+}
+
+export { initialReducer }
+
+
+
+
+// 关于异步
+function listGet(){
+    return new Promise((resolve)=>{
+        setTimeout(() => {
+            resolve(898989)
+        }, 3000);
+       
+    })
+}
+
+let asyncFn = createAsyncThunk("async",async()=>{
+    const test = await listGet()
+    console.log("res:",test)
+    return test
+})
+
+
+// 创建一个 Slice 
+const initialStateSlice: any = {
+    name: "2222",
+    value: 2,
+    title: "r22edux toolkit pre"
+};
+export const initialSlice = createSlice({
+    name: 'slice3',
+    initialState:initialStateSlice,
+    reducers: {
+        add: {
+            reducer(state,action) {
+                state.value += action.payload;
+                //   console.log(action.payload)
+            },
+            // 这个可以做中间件,可以
+            prepare(param1,param2){
+                alert(param1)
+                return {
+                    payload:param1
+                }
+            }
+        },
+        // 注意 action.payload 是传参 
+        async:(state,action)=>{
+            
+        }
+    },
+    extraReducers:(builder)=>{
+        builder.addCase(asyncFn.pending,(state,action)=>{
+            console.log("async pending")
+        })
+        builder.addCase(asyncFn.fulfilled,(state,action)=>{
+            console.log("async fulfilled")
+            console.log(action,action.payload)
+        })
+    }
+});
+export const { add } = initialSlice.actions;
+
+// 默认导出
+let testSlice = initialSlice.reducer
+export { testSlice,asyncFn };
+
+
+```
+
+
+
+
+
+### 2.9.4 rtk.tsx | 调用
+
+```ts
+import { add, asyncFn } from '@/store/user/login'
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+
+export default function RTK() {
+    const count = useSelector((state) => state.counter.value)
+    const reducer = useSelector((state) => state.slice1.value)
+    const dispatch = useDispatch()
+    useEffect(()=>{
+        dispatch(asyncFn())
+    })
+    
+    return (
+        <div>RTK-common:{count}
+        <div>RTK-reducer:{reducer}</div>
+        <button onClick={()=>{dispatch({type:"couter/xx"})}}>点我 上面加</button>
+            <button onClick={()=>{dispatch(add(2))}}>点我 下面加</button>
+        </div>
+    )
+}
+
+```
+
+
+
+
 
 
 
@@ -3984,8 +4797,100 @@ export default TableList;
 
 
 
+## 2.14  优化
+
+
+
+### 2.14.1 减少渲染次数
+
+```js
+函数组件：React.memo、React.useMemo、React.useCallback、React.useRef
+
+
+类组件：PureComponent、shouldComponentUpdat
+```
 
 
 
 
-## 
+
+### 2.14.2 优化usestate | 合并渲染
+
+```ts
+// 解决usestate 渲染两次的问题。同步组件会合并到一次,但是异步组件就会
+
+// 基础知识:下面这样可以进行 合并。
+// 之所以不把下面的分成两个变量，是因为 让这个只是渲染一次就好了，
+// 我们可以 重新写一个 方法来添加 usestate 依赖
+let data = { loading: true, name: "你好" }
+let test = { ...data,loading:false}
+console.log(test)
+
+
+//这就是 最终的 优化
+const useMergeState = (initialState) => {
+    const [state, setState] = useState(initialState);
+    const setMergeState = (newState) =>
+      setState((prevState) => ({ ...prevState, newState }));
+    return [state, setMergeState];
+  };
+  
+
+
+这是使用示例 
+
+useEffect(async () => {
+  const res = await axios.get("xxx");
+  setRequest({ loading: true, data: res });
+
+  // ...
+
+  setRequest({ data: { a: 1 } }); // loading 状态不会丢失，还是 true
+}, []);
+```
+
+
+
+### 2.14.3 优化usestate |  useReducer
+
+
+
+```ts
+const [request, setRequest] = useReducer(
+  (prevState, newState) => {
+    return{ ...prevState, newState })
+    },
+  { loading: false, data: null }
+);
+
+useEffect(async () => {
+  const res = await axios.get("xxx");
+
+  setRequest({ data: { a: 1 } }); // loading 状态不会丢失，还是 true
+}, []);
+```
+
+
+
+### 2.14.3 可中断的渲染
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

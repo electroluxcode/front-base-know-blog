@@ -6,7 +6,7 @@ https://www.typescriptlang.org/play?#code/FAAhQ
 
 ## 2.1 基本
 
-### 2.1.0安装
+### 2.1.0 安装
 
 ```shell
 npm install typescript -g  #这一步之后就可以执行  tsc test.ts 命令了
@@ -502,13 +502,27 @@ data.id=3  // 因为是readonly 所以会报错
 
 
 
-### 2.1.19描述方法
+### 2.1.19 描述方法
 
 ```ts
 // 描述 方法
 type fn = (x:number)=> void
 interface fn {(x:number):void}
 ```
+
+
+
+
+
+### 2.2.20 泛型 + keyof 
+
+
+
+```ts
+function hander<t extends obj,k extends keyof obj>(key:k,value:t)()
+```
+
+
 
 
 
@@ -614,63 +628,6 @@ export interface Options extends Partial<DefaultOptons> {
 ```
 
 
-
-
-
-### 2.2.2 tsconfig配置
-
-https://www.tslang.cn/docs/handbook/compiler-options.html
-
-```ts
-第一行是我认为要的
-注意：下面都包含在 "compilerOptions" 这个 数组里面
---1."skipLibCheck":true    默认值是false 
-改成 true 忽略所有的声明文件（ *.d.ts）的类型检查
-
---2."forceConsistentCasingInFileNames": true   默认值是false
-改成 true 禁止对同一个文件的不一致的引用
-
---3."isolatedModules": false,    默认值是false。 
-如果改成 true 就必须要在每一个文件都要导出了
-
---4."noImplicitAny":true      默认值是false。 
-改成 true 就 在表达式和声明上有隐含的 any类型时报错。但是如果是自己做项目的话，设置成false也可以
-
---5."strict":false 
-alwaysStrict : 每一行加上 "use strict"
-noImplicitAny: 有any 就会报错
-strictNullChecks ： 不能用null 来赋值
-
---6.suppressImplicitAnyIndexErrors:true   索引签名缺失可能会报错
-这里的配置我们可以参考下面
-interface user {
-    id:number,
-    name:string,
-    data:{
-        //这个写法似乎只能在对象中用
-        [key : string] : string | string[]
-    }
-}
-let ob :user =  {
-    id : 2,
-    name : "d",
-    data:{
-	
-    }
-}
-
-
-然后接下来的是根目录中经常用的东西
-//**表示任意目录   *表示任意文件
-// 指定需要编译文件 否则默认当前目录下除了exclude之外的所有.ts, .d.ts,.tsx 文件
-"include": ["./test.ts"],
-// 指定需要编译文件 否则默认当前目录下除了exclude之外的所有.ts, .d.ts,.tsx 文件
-"files": ["./src/**/*"],
-// 不编译某些文件
-"exclude": ["test.ts"],
-
-
-```
 
 
 
@@ -1640,6 +1597,249 @@ declare module '工具' {
 
 
 
+
+
+
+
+
+## 2.6 别人没有 ts 的  npm 包 打包
+
+
+
+一般我们就是 要用 tsc 进行 初始化，现在 我们来讲一下大概的配置.
+
+
+
+
+
+### 2.6.1 tsc 配置
+
+```shell
+npm install typescript -g
+# 这行代码能够生成 tsconfig.json 文件
+tsc --init 
+```
+
+
+
+### 2.6.2 tsconfig配置
+
+https://www.tslang.cn/docs/handbook/compiler-options.html
+
+```ts
+第一行是我认为要的
+注意：下面都包含在 "compilerOptions" 这个 数组里面
+--1."skipLibCheck":true    默认值是false 
+改成 true 忽略所有的声明文件（ *.d.ts）的类型检查
+
+--2."forceConsistentCasingInFileNames": true   默认值是false
+改成 true 禁止对同一个文件的不一致的引用
+
+--3."isolatedModules": false,    默认值是false。 
+如果改成 true 就必须要在每一个文件都要导出了
+
+--4."noImplicitAny":true      默认值是false。 
+改成 true 就 在表达式和声明上有隐含的 any类型时报错。但是如果是自己做项目的话，设置成false也可以
+
+--5."strict":false 
+alwaysStrict : 每一行加上 "use strict"
+noImplicitAny: 有any 就会报错
+strictNullChecks ： 不能用null 来赋值
+
+--6.suppressImplicitAnyIndexErrors:true   索引签名缺失可能会报错
+这里的配置我们可以参考下面
+interface user {
+    id:number,
+    name:string,
+    data:{
+        //这个写法似乎只能在对象中用
+        [key : string] : string | string[]
+    }
+}
+let ob :user =  {
+    id : 2,
+    name : "d",
+    data:{
+	
+    }
+}
+
+
+然后接下来的是根目录中经常用的东西
+//**表示任意目录   *表示任意文件
+// 指定需要编译文件 否则默认当前目录下除了exclude之外的所有.ts, .d.ts,.tsx 文件
+"include": ["./test.ts"],
+// 指定需要编译文件 否则默认当前目录下除了exclude之外的所有.ts, .d.ts,.tsx 文件
+"files": ["./src/**/*"],
+// 不编译某些文件
+"exclude": ["test.ts"],
+
+
+```
+
+
+
+
+
+```js
+{
+    // 指定要使用的默认库，值为"es3","es5","es2015"...
+    "target": "es2015", 
+    "compilerOptions": {
+        // 在生成模块代码时指定模块系统
+        "module": "commonjs", 
+        "experimentalDecorators": true,
+        "compilerOptions": {
+            // TS编译器在第一次编译之后会生成一个存储编译信息的文件，第二次编译会在第一次的基础上进行增量编译，可以提高编译的速度
+            "incremental": true, 
+             // 增量编译文件的存储位置
+            "tsBuildInfoFile": "./buildFile", 
+                // 打印诊断信息 
+            "diagnostics": true, 
+                // 目标语言的版本
+            "target": "ES5", 
+                 // 生成代码的模板标准
+            "module": "CommonJS",
+                // 将多个相互依赖的文件生成一个文件，可以用在AMD模块中，即开启时应设置"module": "AMD",
+            "outFile": "./app.js", 
+                // TS需要引用的库，即声明文件，es5 默认引用dom、es5、scripthost,如需要使用es的高级版本特性，通常都需要配置，如es8的数组新特性需要引入"ES2019.Array",
+            "lib": ["DOM", "ES2015", "ScriptHost", "ES2019.Array"], 
+                // 允许编译器编译JS，JSX文件
+            "allowJS": true, 
+                // 允许在JS文件中报错，通常与allowJS一起使用
+            "checkJs": true, 
+                 // 指定输出目录
+            "outDir": "./dist",
+                // 指定输出文件目录(用于输出)，用于控制输出目录结构
+            "rootDir": "./", 
+                // 生成声明文件，开启后会自动生成声明文件
+            "declaration": true, 
+                // 指定生成声明文件存放目录
+            "declarationDir": "./file", 
+                 // 只生成声明文件，而不会生成js文件
+            "emitDeclarationOnly": true,
+                // 生成目标文件的sourceMap文件
+            "sourceMap": true, 
+                // 生成目标文件的inline SourceMap，inline SourceMap会包含在生成的js文件中
+            "inlineSourceMap": true, 
+                // 为声明文件生成sourceMap
+            "declarationMap": true, 
+                // 声明文件目录，默认时node_modules/@types
+            "typeRoots": [], 
+                // 加载的声明文件包
+            "types": [], 
+                 // 删除注释 
+            "removeComments":true,
+                // 不输出文件,即编译后不会生成任何js文件
+            "noEmit": true, 
+                // 发送错误时不输出任何文件
+            "noEmitOnError": true, 
+                // 不生成helper函数，减小体积，需要额外安装，常配合importHelpers一起使用
+            "noEmitHelpers": true, 
+                // 通过tslib引入helper函数，文件必须是模块
+            "importHelpers": true, 
+                // 降级遍历器实现，如果目标源是es3/5，那么遍历器会有降级的实现
+            "downlevelIteration": true, 
+            "strict": true, // 开启所有严格的类型检查
+            "alwaysStrict": true, // 在代码中注入'use strict'
+            "noImplicitAny": true, // 不允许隐式的any类型
+            "strictNullChecks": true, // 不允许把null、undefined赋值给其他类型的变量
+            "strictFunctionTypes": true, // 不允许函数参数双向协变
+            "strictPropertyInitialization": true, // 类的实例属性必须初始化
+            "strictBindCallApply": true, // 严格的bind/call/apply检查
+            "noImplicitThis": true, // 不允许this有隐式的any类型
+            "noUnusedLocals": true, // 检查只声明、未使用的局部变量(只提示不报错)
+            "noUnusedParameters": true, // 检查未使用的函数参数(只提示不报错)
+            "noFallthroughCasesInSwitch": true, // 防止switch语句贯穿(即如果没有break语句后面不会执行)
+            "noImplicitReturns": true, //每个分支都会有返回值
+            "esModuleInterop": true, // 允许export=导出，由import from 导入
+            "allowUmdGlobalAccess": true, // 允许在模块中全局变量的方式访问umd模块
+            "moduleResolution": "node", // 模块解析策略，ts默认用node的解析策略，即相对的方式导入
+            "baseUrl": "./", // 解析非相对模块的基地址，默认是当前目录
+            "paths": { // 路径映射，相对于baseUrl
+              // 如使用jq时不想使用默认版本，而需要手动指定版本，可进行如下配置
+              "jquery": ["node_modules/jquery/dist/jquery.min.js"]
+            },
+            "rootDirs": ["src","out"], // 将多个目录放在一个虚拟目录下，用于运行时，即编译后引入文件的位置可能发生变化，这也设置可以虚拟src和out在同一个目录下，不用再去改变路径也不会报错
+            "listEmittedFiles": true, // 打印输出文件
+            "listFiles": true// 打印编译的文件(包括引用的声明文件)
+          }
+     
+    },
+    "exclude": [ // 要排除的文件
+        "node_modules",
+        "**/node_modules/*"
+    ],
+    "checkJs": false, // 启用javascript文件的类型检查
+    "baseUrl": "*", // 解析非相关模块名称的基础目录
+    "paths": {
+        "utils": [
+            "src/utils/*"
+        ] // 指定相对于baseUrl选项计算的路径映射，使用webpack别名，智能感知路径
+    },
+}
+```
+
+
+
+
+
+最终 tsconfig.json 
+
+```js
+{
+  "include":["types.ts"],
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+
+    
+    "target": "ES2020",                                  /* Set the JavaScript language version for emitted 
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+
+    /* Type Checking */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+  	
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+  }
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+### 2.6.3  .d.ts
+
+```ts
+declare class Web3 {
+  constructor(provider: { } | string);
+  version: string;
+  utils: any; // 这里你可以使用 any 类型或者具体的类型声明，具体根据实际情况
+  eth: {
+    getBalance(address: string): Promise<string>;
+  };
+  personal: {
+    sign(message: string, address: string): Promise<string>
+  };
+  static givenProvider: any;
+}
+declare namespace Web3 {
+}
+
+// 如果使用 ES6 模块，还需要声明模块
+declare module "web3" {
+  export = Web3;
+}
+```
 
 
 
