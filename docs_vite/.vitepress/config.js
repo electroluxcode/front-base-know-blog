@@ -93,7 +93,7 @@ export default defineConfig({
 
        
             { text: "13electron", link: "/know/框架/13electron" },
-            
+            { text: "13electron", link: "/know/框架/17webpack" },
           ],
         },
         {
@@ -102,7 +102,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: "性能优化和安全", link: "/know/优化/1性能优化和安全" },
-            { text: "webpack", link: "/know/优化/2webpack" },
+            
             { text: "算法", link: "/know/优化/3算法" },
             { text: "性能优化", link: "/know/优化/4性能优化" },
             { text: "组件库构造", link: "/know/优化/5npm,组件库构造" },

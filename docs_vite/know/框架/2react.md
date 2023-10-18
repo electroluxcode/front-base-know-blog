@@ -555,7 +555,19 @@ props 是不可变的（父子间初始传参），而 state 可以根据与用�
 
 
 
-### 2.1.4 合成事件 = 事件委托 |  复合事件 | 别的dom事件
+### 2.1.4 合成事件 = 事件委托 |  复合事件 | 别的dom事件 | event.target 与 event.currentTarget
+
+执行顺序
+
+- React16: document 捕获 -> 原生事件 -> 合成事件 -> document 冒泡 (原因是事件委托在 document 的冒泡事件上
+
+- React17/18: document 捕获 -> 合成捕获 -> 原生捕获 -> 原生冒泡 -> 合成冒泡 -> document 冒泡 (原因是合成事件的委托在 root 容器的捕获和冒泡事件上了测试链接
+
+  捕获 阶段 react 事件 会快一点 。冒泡 阶段 自定义事件 会快一点
+
+
+
+
 
 ```js
 1.合成事件
@@ -567,6 +579,10 @@ react17添加到container层，react17以前添加到document
 如需注册捕获阶段的事件处理函数，则应为事件名添加 Capture。例如，处理捕获阶段的点击事件请使用 onClickCapture，而不是 onClick。
 
 然后之前的dragStart 变成了 ondragStart，都在前面加了一个on
+
+
+
+react 的 合成事件 是真的不厚道，取了一个跟原生事件里面一样的名字
 
 2.复合事件
 oncompositionEnd ,oncompositionStart , onCompositionUpdate
@@ -1668,6 +1684,8 @@ tree层级 | conponent层级：：跨层级的操作不做优化，只会对相�
 element层级 ：这种情况就是同级别的，这个时候就有插入 移动 和 删除了
 
 通过key可以准确地发现新旧集合中的节点都是相同的节点，因此无需进行节点删除和创建，只需要将旧集合中节点的位置进行移动，更新为新集合中节点的位置
+
+
 ```
 
 
@@ -1986,6 +2004,20 @@ let render: FC<ApiManageProps> = () => {
 
 
 
+
+### 2.30  Diff 算法
+
+而元素 key 属性的作用是用于判断元素是新创建的还是被移动的元素，从而减少不必要的元素渲染
+
+- tree 层级：DOM 节点跨层级的操作不做优化，只会对相同层级的节点进行比较
+- conponent 层级：如果是同一个类的组件，则会继续往下 diff 运算，如果不是一个类的组件，那么直接删除这个组件下的所有子节点，创建新的 
+- element 层级：对于比较同一层级的节点们，每个节点在对应的层级用唯一的 key 作为标识
+
+
+
+### 2.31 useEffect 第一个函数参数不能设置为 async 函数，为什么
+
+因为useEffect 的返回值是要在卸载组件时调用的，不然就乱套了
 
 
 

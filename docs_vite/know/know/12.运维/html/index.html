@@ -76,7 +76,7 @@ async function ajax(options) {
             }
             xhr.open(method, options.url + str, true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	xhr.setRequestHeader('Cache-Control', 'max-age=0.1');
+	        // xhr.setRequestHeader('Cache-Control', 'max-age=0.1');
             xhr.send(options.data);
         }
         if (method === 'POST') {
@@ -88,7 +88,7 @@ async function ajax(options) {
 }
 let option = {
     method: "GET",
-    url: "/api/GET",
+    url: "http://localhost:8088/api/GET",
     data: {
         id: "d2ddd"
     }

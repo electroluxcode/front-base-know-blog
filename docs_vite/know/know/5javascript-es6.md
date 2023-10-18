@@ -23,16 +23,9 @@ arr[0] = 1;
 
 
 
-## 3.1.BigInt类型是一种内置对象
 
-可以表示大于2^53-1的整数，这是number能表示的最大数字
 
-```text
-const BigNumber = 2838489273498793847982374n
-const BigNumber2 = BigInt(298374982374938)
-const BigNumber3 = BigInt('2398749829823474982')
-const BigNumber4 = BigInt('0x1ffffffffffffffffffffffffff')
-```
+
 
 ## 3.2.扩展运算符
 
@@ -124,25 +117,7 @@ console.log(target) // {a:1, b:2, c:3}
 // 箭头函数
 ```
 
-## 3.4.Set | Map
 
-```js
-let s = new Set()
-s.add(1).add(2) // {1,2}
-s.delete(1) // true
-s.has(1) //false
-s.clear()
-
-let m = new Map()
-m.set('foo', 2) // 这种 赋值 跟 
-m.set('bar', 'hello')
-console.log(m) //Map(2) { 'foo' => 2, 'bar' => 'hello' }
-console.log(m.has('foo')) // true
-console.log(m.get('foo')) // 2
-console.log(m.delete('foo')) // true
-m.clear()
-console.log(m.size) // 0
-```
 
 ## 3.5 symbol  | map | weakmap  | for in of
 
@@ -237,30 +212,10 @@ promise:
 2.同步的，但是then是异步的 
 3.三种状态 pending fulfillng reject 
 4.状态不可逆 。resolve和reject是主线程的，.then是异步的
-.then的原理：then返回一个promise对象。保证了可以链式调用
-```
-
-
-
-### 3.7.2 api
-
-#### 3.7.2.1 allsettle
-
-无论成功还是失败都会返回回来
 
 ```
-promise.allsettle([promise])
-```
 
 
-
-   而race和all的语法一样，但是返回最先执行完毕的那个promise的resolve的返回值finally则是无论状态如何，都会执行的操作。
-2 如何中断Promise的链式调用？
-   throw抛出异常、使用reject
-
-4 Proxy代理用于实现一些基本操作的拦截和自定义（例如set和get等），Proxy拦截set, get, has, defineProperty, deleteProperty等13个操作
-
-5.ES6 Module
 
 
 
@@ -877,22 +832,6 @@ globalThis
 
 
 
-### 3.13.1  正则 
-
-
-
-
-
-## 3.14 数据类型
-
-### 3.14.1
-
-```
-Generator
-```
-
-
-
 ## 3.15 异步
 
 ```js
@@ -901,7 +840,7 @@ Generator
  })
 ```
 
-#  1.js高级（红宝书）
+#  1.js数据结构 | 红宝书
 
 
 
@@ -1065,12 +1004,6 @@ ECMA（语法）+dom（文档对象模型 p titile h1）和bom（浏览器对象
 
 
 
-
-
-
-
-
-
 ## 1.2 正则表达式
 
 ```js
@@ -1227,7 +1160,7 @@ replace本身就是传入两个参数
 
 
 
-## 2.6生成器对象
+## 1.6 生成器对象
 
 ```js
 生成器。函数前面加一个*
@@ -1257,413 +1190,7 @@ yield   ccc
 
 
 
-## 1.7 在node使用esm语法
 
-一般来说我们在node xxxx.js 的时候只能使用cjs语法，也就是说只能使用
-
-```js
-module.exports ={test,varible};  
-const xx = require("xxxx.js")
-```
-
-这样的语法
-
-如果我们想用
-
-```js
-export {test}
-import {test} from './es6.js'
-test()
-
-会报错类似于 
-syntaxError: Cannot use import statement outside a module
-```
-
-前提：**Node V13.2.0**以上才能用下面的方法
-
-我们可以在文件下面新建package.json
-
-```json
-{
-    "name": "leetcode",
-    "version": "1.0.0",
-    "description": "",
-    "type": "module",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC"
-  }
-
-```
-
-
-
-这样就可以了
-
-## 1.8监听劫持console事件
-
-```js
-// import BaseMonitor from "../base/baseMonitor.js";
-// import { ErrorCategoryEnum,ErrorLevelEnum } from "../base/baseConfig.js"
-/**
- * console.error异常
- */
-class ConsoleError  {
-    
-    constructor(params){
-        // super(params);获取父级的消息
-        console.warn("参数是："+JSON.stringify(params))
-    }
-
-    /**
-     * 处理console事件
-     */
-    handleError(){
-        this.registerInfo();
-
-    }
-
-    /**
-     * 处理信息
-     */
-    registerInfo(){
-        let t = this;
-        console.log=function(){
-            // t.handleLog(ErrorLevelEnum.INFO,ErrorCategoryEnum.CONSOLE_INFO,arguments);
-            t.handleLog("info","console_info",arguments);
-        }
-    }
-
-
-    /**
-     * 处理日志
-     */
-    handleLog(level,category,args){
-        try {
-            this.level = level;
-            let params = [...args];
-            this.msg = params.join("\r\n"); //换行符分割
-            // this.url = location.href;   //当前地址
-            this.category = category;
-            let temp ={
-                level:this.level,
-                params:params,
-                msg:this.msg,
-                category:category
-            }
-            console.warn("处理info数据：",temp)
-        } catch (error) {
-            console.log("console统计错误异常",level,error);
-        }
-    }
-
-}
-
-/**
- * 初始化console事件
- */
-(function(){  
-    //创建空console对象，避免JS报错  
-    if(!window.console){
-        window.console = {};
-    }
-    let funcs = ['log','tWarn','tError'];
-    //这里劫持 console.log console.tWarn tError数据
-    funcs.forEach((func,index)=>{
-        if(!console[func]){
-            console[func] = function(){};
-        }
-    });
-})()
-
-new ConsoleError({
-    "test":"12"
-}).handleError()
-console.log("测试数据")
-export default ConsoleError;
-```
-
-
-
-
-
-## 1.9 手写 promise
-
-```js
-const resolvePromise = (promise2, x, resolve, reject) => {
-    // 自己等待自己完成是错误的实现，用一个类型错误，结束掉 promise  Promise/A+ 2.3.1
-    if (promise2 === x) { 
-      return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
-    }
-    // Promise/A+ 2.3.3.3.3 只能调用一次
-    let called;
-    // 后续的条件要严格判断 保证代码能和别的库一起使用
-    if ((typeof x === 'object' && x != null) || typeof x === 'function') { 
-      try {
-        // 为了判断 resolve 过的就不用再 reject 了（比如 reject 和 resolve 同时调用的时候）  Promise/A+ 2.3.3.1
-        let then = x.then;
-        if (typeof then === 'function') { 
-          // 不要写成 x.then，直接 then.call 就可以了 因为 x.then 会再次取值，Object.defineProperty  Promise/A+ 2.3.3.3
-          then.call(x, y => { // 根据 promise 的状态决定是成功还是失败
-            if (called) return;
-            called = true;
-            // 递归解析的过程（因为可能 promise 中还有 promise） Promise/A+ 2.3.3.3.1
-            resolvePromise(promise2, y, resolve, reject); 
-          }, r => {
-            // 只要失败就失败 Promise/A+ 2.3.3.3.2
-            if (called) return;
-            called = true;
-            reject(r);
-          });
-        } else {
-          // 如果 x.then 是个普通值就直接返回 resolve 作为结果  Promise/A+ 2.3.3.4
-          resolve(x);
-        }
-      } catch (e) {
-        // Promise/A+ 2.3.3.2
-        if (called) return;
-        called = true;
-        reject(e)
-      }
-    } else {
-      // 如果 x 是个普通值就直接返回 resolve 作为结果  Promise/A+ 2.3.4  
-      resolve(x)
-    }
-  }
-
-// 三个状态：PENDING、FULFILLED、REJECTED
-class Promise1 {
-    constructor(executor) {
-        this.status = 'PENDING';// 默认状态为 'PENDING'
-        this.value = undefined;// 存放成功状态的值
-        this.reason = undefined;// 存放失败状态的值
-
-        //step0:下面这两个为了解决异步不生效问题
-        this.onResolvedCallbacks = [];// 存放成功的回调 
-        this.onRejectedCallbacks = []; // 存放失败的回调 
-
-        // step1:定义resolve和reject方法（初始化中）
-        // 给函数变量赋值就可以了
-        let resolve = (value) => {
-            // 状态为 'PENDING' 时才可以更新状态，防止 executor 中调用了两次 resolve/reject 方法
-            console.log("resolve里面的resolve：" + this.status + "   value的值：" + value)
-            if (this.status === 'PENDING') {
-                this.status = 'FULFILLED';
-                this.value = value;
-                this.onResolvedCallbacks.forEach(fn => fn());
-            }
-        }
-        let reject = (reason) => {
-            // 状态为 'PENDING' 时才可以更新状态，防止 executor 中调用了两次 resolve/reject 方法
-            if (this.status === 'PENDING') {
-                this.status = 'REJECTED';
-                this.reason = reason;
-                this.onRejectedCallbacks.forEach(fn => fn());
-            }
-        }
-
-        try {
-            // step2：调用promise，立即执行两个形参（初始化中）
-            // 这里的executor一般来说实际上就是 es6 的箭头函数()，这玩意也是一个函数，传参传的就是函数
-            // 但是函数里面的形参是在promise对象里面定义的，这点还是挺罕见的。这就代表 resolve, reject我们只用赋值就可以了
-            // 注意，如果这里是异步，在我们new resolve方法的时候，异步方法就开始执行，我们如果隔久一点调用then，是已经执行完的状态。
-            // 因此 这里是一个reason的赋值，和执行。
-            // 只有resolve进来后才能调用这个方法，executor(resolve('成功222222222222222'), reject) ;
-            executor(resolve, reject)
-        } catch (error) {
-            // 发生异常时执行失败逻辑
-            reject(error)
-        }
-    }
-
-    // step3：then也是传入两个方法就可以了，一个是成功的箭头函数 一个是错误的箭头函数 
-    then(onFulfilled, onRejected) {
-        //重要：同步这里会直接执行，但是异步不会
-        // if (this.status === 'FULFILLED') {
-        //     onFulfilled(this.value);
-        //     
-        // }
-        // if (this.status === 'REJECTED') {
-        //     onRejected(this.reason)
-        // }
-        // // 解决then里面的值拿不到
-        // if (this.status === 'PENDING') {
-        //     // 如果promise的状态是 pending，需要将 onFulfilled 和 onRejected 函数存放起来进集合里面。
-        //     //因为是在之后异步执行，然后集合里会早就有这些元素
-        //     // 等待状态确定后，再依次将对应的函数执行
-        //     this.onResolvedCallbacks.push(() => {
-        //         onFulfilled(this.value)
-        //     });
-        //     this.onRejectedCallbacks.push(() => {
-        //         onRejected(this.reason);
-        //     })
-        // }
-        let promise2 = new Promise((resolve, reject) => {
-            if (this.status === "FULFILLED") {
-              //Promise/A+ 2.2.2
-              //Promise/A+ 2.2.4 --- setTimeout
-              setTimeout(() => {
-                try {
-                  //Promise/A+ 2.2.7.1
-                  let x = onFulfilled(this.value);
-                  // x可能是一个proimise
-                  resolvePromise(promise2, x, resolve, reject);
-                } catch (e) {
-                  //Promise/A+ 2.2.7.2
-                  reject(e)
-                }
-              }, 0);
-            }
-      
-            if (this.status === "REJECTED") {
-              //Promise/A+ 2.2.3
-              setTimeout(() => {
-                try {
-                  let x = onRejected(this.reason);
-                  resolvePromise(promise2, x, resolve, reject);
-                } catch (e) {
-                  reject(e)
-                }
-              }, 0);
-            }
-      
-            if (this.status === "PENDING") {
-              this.onResolvedCallbacks.push(() => {
-                setTimeout(() => {
-                  try {
-                    let x = onFulfilled(this.value);
-                    resolvePromise(promise2, x, resolve, reject);
-                  } catch (e) {
-                    reject(e)
-                  }
-                }, 0);
-              });
-      
-              this.onRejectedCallbacks.push(()=> {
-                setTimeout(() => {
-                  try {
-                    let x = onRejected(this.reason);
-                    resolvePromise(promise2, x, resolve, reject)
-                  } catch (e) {
-                    reject(e)
-                  }
-                }, 0);
-              });
-            }
-          });
-      
-          return promise2;
-        
-    }
-}
-
-//resolve在这里算是代理者模式和一种别的的订阅模式
-// executor是一个方法（构造器里面的方法，理解到这一点的我真是吐了），通过resolve的参数是包在同步还是异步来进行调用
-const promise = new Promise1((resolve, reject) => {
-    setTimeout(() => {
-        //只要new这里就会执行
-        resolve('成功222222222222222');
-    }, 2000);
-})
-promise.then((data) => {
-    //如果不用订阅者那一套，连着写不能输出
-    console.log("一次调用："+data)
-    return('success'+data)
-}
-).then((res)=>{
-    console.log("二次调用："+res)
-})
-
-
-//总结：难点主要有两个  第一个是异步（这个用发布者订阅者模式可以做到）
-// 第二个是then 值穿透 和 链式调用（这个主要用递归）
-```
-
-
-
-## 1.10 拿到console.log示例
-
-```js
- class ConsoleError  {
-    
-    constructor(params){
-        // super(params);获取父级的消息
-        console.warn("参数是："+JSON.stringify(params))
-    }
-
-    /**
-     * 处理console事件
-     */
-    handleError(){
-        this.registerInfo();
-
-    }
-
-    /**
-     * 处理信息
-     */
-    registerInfo(){
-        let t = this;
-        console.log=function(){
-            // t.handleLog(ErrorLevelEnum.INFO,ErrorCategoryEnum.CONSOLE_INFO,arguments);
-            t.handleLog("info","console_info",arguments);
-        }
-    }
-
-
-    /**
-     * 处理日志
-     */
-    handleLog(level,category,args){
-        try {
-            this.level = level;
-            let params = [...args];
-            this.msg = params.join("\r\n"); //换行符分割
-            // this.url = location.href;   //当前地址
-            this.category = category;
-            let temp ={
-                level:this.level,
-                params:params,
-                msg:this.msg,
-                category:category
-            }
-            console.warn("处理info数据：",temp)
-        } catch (error) {
-            console.log("console统计错误异常",level,error);
-        }
-    }
-
-}
-
-/**
- * 初始化console事件
- */
-(function(){  
-    //创建空console对象，避免JS报错  
-    if(!window.console){
-        window.console = {};
-    }
-    let funcs = ['log','tWarn','tError'];
-    //这里劫持 console.log console.tWarn tError数据
-    funcs.forEach((func,index)=>{
-        if(!console[func]){
-            console[func] = function(){};
-        }
-    });
-})()
-//试验
-new ConsoleError({
-    "test":"12"
-}).handleError()
-console.log("测试数据")
-
-
-
-
-```
 
 
 
@@ -1707,17 +1234,100 @@ generator是一种特殊的iterator，generator可以替代iterator实现，使�
 
 
 
+## 1.12 BigInt类型是一种内置对象
+
+
+
+可以表示大于2^53-1的整数，这是number能表示的最大数字s
+
+```ts
+const BigNumber = 2838489273498793847982374n
+const BigNumber2 = BigInt(298374982374938)
+const BigNumber3 = BigInt('2398749829823474982')
+const BigNumber4 = BigInt('0x1ffffffffffffffffffffffffff')
+
+```
 
 
 
 
 
+## 1.13 Map
 
 
 
+- 定义:let m = new Map()
+- 设置:m.set('foo', 2)
+- 是否有某个属性:m.has('foo')
+- 读取属性:console.log(m.get('foo'))
+- 删除属性：m.delete('foo')
+- 清除map:m.clear()
+- 获取数量：(m.size) // 0
+- map 用 json.stringify 会报错，不想报错只能够定义json.stringify的第二个参数，也就是function(key,value),这样的话，key是没有参数的，只有value有参数，这个时候最好组装成 object 结构的东西
+- 对了 map经过 array.from 的 第一个参数是最先加进去的参数
 
 
 
+## 1.14 Set
+
+- 创造: new Set()
+- 添加:add(1)
+- 删除:.delete(1) 
+- 是否存在某一个元素:has(1) 
+- 全部删除：clear()
+
+
+
+## 1.15 weakset
+
+- `WeakSet` **只能是对象**的集合，而不能像 [`Set`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Set) 那样，可以是任何类型的任意值
+
+- 但是不同内存地址的对象也麻烦.并且不能够直接访问集合中的元素。并没有 iterable属性
+
+- 适合用在不需要判断 他能不存在的数组。（注意需要控制他就不行，因为拿不到具体的值）。但是又有问题，就是对象的引用地址的会变的
+
+  
+
+  
+
+## 1.16 WeakRef
+
+这玩意能不用就不用？
+
+```ts
+let test  = new WeakRef({
+	id:2
+});
+let test1 = test.deref()
+console.log("test:",test)
+console.log("test1:",test1)
+```
+
+因为他可能永久不会被回收，并且在不同js渲染器上面表现的形式也有所不同
+
+
+
+## 1.20 数据转化
+
+- map 和 json的互转
+
+  ```ts
+  const myMap = new Map([
+    ['key1', 'value1'],
+    ['key2', 'value2'],
+  ]);
+  const mapToObject = Object.fromEntries(myMap); // 转换为对象
+  ```
+
+- set 转  array
+
+  ```ts
+  let test = new Set()
+  test.add(23)
+  console.log(Array.from(test))
+  ```
+
+  
 
 
 

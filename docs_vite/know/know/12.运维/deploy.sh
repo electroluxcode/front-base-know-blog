@@ -8,8 +8,8 @@ docker_hub_username=${3:-electroluxcode} # Docker Hub 用户名
 container_name=${4:-bimddp_container} # 容器名字
 container_expose_port=${5:-81} # 容器暴露的端口
 
-server_username=${6:-root} # Linux服务器用户名
-server_address=${7:-192.168.80.133} # Linux服务器地址
+server_username=${6:-ubuntu} # Linux服务器用户名
+server_address=${7:-62.234.180.224} # Linux服务器地址
 
 
 
@@ -25,7 +25,7 @@ docker push $docker_hub_username/$docker_image_name:$docker_image_version
 
 # step4:这一步可以 ssh-copy-id 去除登录
 ssh $server_username@$server_address << EOF
-
+sudo -s
 docker ps
 docker stop $container_name
 docker rm $container_name
@@ -39,7 +39,7 @@ if [ $? -ne 0 ]; then
 fi
 docker images
 
-
+# docker run -d --name bimddp_container -p 81:80 electroluxcode/bimddp_image:1.1
 docker run -d --name $container_name -p $container_expose_port:80 $docker_hub_username/$docker_image_name:$docker_image_version
 docker ps
 docker images

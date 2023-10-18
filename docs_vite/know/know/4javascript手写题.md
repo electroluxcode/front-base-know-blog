@@ -267,6 +267,22 @@ function uniqueArr(arr) {
 
 
 
+## 4.7  手写new
+
+```ts
+function myNew(Fun, ...args) {
+    let obj = {};
+    obj.__proto__ = Fun.prototype;
+    let res = Fun.apply(obj, args);
+    if (res instanceof Object) {
+        return res;
+    } else {
+        return obj;
+    }
+}
+
+```
+
 
 
 

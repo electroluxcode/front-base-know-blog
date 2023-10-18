@@ -798,7 +798,27 @@ spider直接爬你页面一开始的静态页面
 
 
 
-## 1.8 语义化 | role | aria 
+## 1.8 无障碍 
+
+- 视障：配色方案 | 字体大小(放大缩小也可以) | 可聚焦控件 
+- 运动功能障碍：键盘控件，非鼠标功能 | label
+- 听力障碍的人依赖于替代音频/视频内容的文本
+
+nvda appliction 可以用来调试无障碍
+
+
+
+### 1.8.1 语义化的作用
+
+ 下面的按键，单独使用其本身切换到下一个可用的元素，加入 Shift 键后切换到上一个可用的元素：
+
+- ​      h:标题
+- ​      l:列表
+- ​      i: 列表项目
+- ​      t: 表格
+- ​      k: 链接
+- ​      g: 图片
+- ​      1 到 6: 分别表示1到6级的标题
 
 
 
@@ -810,6 +830,43 @@ spider直接爬你页面一开始的静态页面
 比如用div做button，那么设置div 的 role=“button”，辅助工具就可以认出这实际上是个button。
 <div role="checkbox" ></div>
 ```
+
+
+
+
+
+
+
+### 1.8.2 关于表格(accessibility aids)
+
+```html
+下面这种表格可以说是最佳实践
+
+ <table>
+      <caption>A summary of the UK's most famous punk bands</caption>
+      <thead>
+        <tr>
+          <th scope="col">Band</th>
+          <th scope="col">Year formed</th>
+          <th scope="col">No. of Albums</th>
+          <th scope="col">Most famous song</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Buzzcocks</th>
+          <td>1976</td>
+          <td>9</td>
+          <td>Ever fallen in love (with someone you shouldn't've)</td>
+        </tr>
+     </tbody>
+     
+</table>
+```
+
+
+
+
 
 
 
@@ -829,6 +886,64 @@ aria-hidden="true"  能够直接隐藏
 屏幕阅读设备： <div class=’button disabled’ role=’button’ aria-checked=’false’ aria-disabled=’true’>点我</div>             
                                       
 ```
+
+
+
+### 1.8.5 读出指定的声音
+
+- img标签:alt属性
+- input/button:aria-label 属性
+- 
+
+
+
+
+
+### 1.8.6 tabindex
+
+tabindex="0"
+
+​	
+
+```ts
+什么时候需要使用 tab_index
+            1.1 大小标题
+            1.2 超链接
+            1.3 搜索栏目
+            1.4 菜单
+            1.5 按钮 | 表单项目
+
+            只有三种情况 
+            负值:键盘不能够tab
+            0:键盘能tab，优先级最低
+            正值:按照大小的优先级来排列
+```
+
+
+
+
+
+
+
+### 1.8.7 aria-busy
+
+```ts
+当在向用户宣布更改之前需要加载实时区域的多个部分时，请设置aria-busy="true"直到加载完成。然后设置为aria-busy="false". 这可以防止辅助技术在更新完成之前宣布更改
+```
+
+
+
+
+
+
+
+
+
+### 1.8.4 最佳实践
+
+- 焦点(注意css的outline属性)
+
+
 
 
 

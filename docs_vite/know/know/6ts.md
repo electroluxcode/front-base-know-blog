@@ -53,44 +53,21 @@ console.log(Color.Red)
 
 
 
-### 2.1.3  联合类型 | 交叉类型 | 类型扩展
+### 2.1.3  联合类型( | ) | 交叉类型(&)  | 类型扩展 | extends（继承）|  implements（实现）| 
 
 ```js
 // 1.联合类型  | ：为了保证安全 可以 if(type of xx){xxxxx} = 宽容度高 进行合并
+// 同类项
 
-// 常用实例1：不同类型
-type unionType1 = "GET" | "POST" // 
-let begin= (param:unionType1)=>{
-}
-这样在输入 begin("")就有类型提示了
-
-// 常用实例2：合并 类型
-
-type param1 = {
-    id: number
-    inform: string
-}
-type param2 = {
-    id: never
-}
+type param1 = {id: number,inform: string}
+type param2 = {id: never}
 // 这里同时声明了两个ID但是互相冲突也可以兼容，因为完全满足了一个
 type aw = param1 | param2  
-let anawer: aw = {
-    id: 2,
-    inform: "d"
-}
-
-
+let anawer: aw = {id: 2,inform: "d"}
 // 2.交叉类型 & = 宽容度低 进行合并
-
 常用实例1:
-type param1 = {
-    id: string
-    inform: string
-}
-type param2 = {
-    id: never
-}
+type param1 = {id: string;inform: string}
+type param2 = {id: never}
 // 融合了但是报错
 type aw = param1 & param2
 
@@ -103,57 +80,14 @@ type ParamType2 = number & any
 type paramType = number & string 
 // 如果是 object 字面量类型 ("xxx"或者boolean类型) 那么 & 整个 类型 都会变成never 。注意区分跟上面的属性变成never不同
 
-```
 
-
-
-### 2.1.4   interface | 对象 类型扩展
-
-```typescript
-// 对象简单一点直接 :object也可以
-// 类型断言/接口
-interface IUser {
-    id:number,
-    // 5.1表示这个变量可有可无（可选属性），不加？如果不加上name会报错
-    // 5.2或者 使用的变量 加上 as Iuser(类型断言)
-    name?: string,
-    // 5.3只读属性(字面意思)
-    readonly age:number;
-    // 5.3只读属性(字面意思)
-    callback1?:(admin:string) => string
-}
-//5.5函数 类型 （形参）
-interface Ifunction{
-    (source: string): void;
-}
-let ceshiFunction:Ifunction=(testParam)=>{
-    console.log(testParam)
-    return "dd"
-}
-// 1212
-ceshiFunction("函数断言")
-// 5.6 如果interface里面 想加入你的属性 ，就要用类型断言
-let b:IUser = {
-    id: 45,
-    age:8,
-    name1:12,
-    callback1:(test:string):string=>{
-        return test
-    }
-} as IUser ;
-b.id=5
-b.callback1=(admin)=>{
-    console.log(admin)
-    return admin
-}
-b.callback1("断言45454545")
-// b.age=5
-// console.log(b)
-
+// 3.
+--1.extends（继承）:
+一个新的interface或者class,可以重写 interface 或者 class
+--2.implements（实现）:
+一个新的interface或者class,必须拥有所有 父类的值
 
 ```
-
-
 
 
 
@@ -244,17 +178,6 @@ declare module "*.css"{
 
 
 
-
-### 2.1.9  extends（继承）|  implements（实现）
-
-```js
---1.extends（继承）:
-一个新的接口或者类,从父类或者接口继承所有的属性和方法,不可以重写属性,但可以重写方法
---2.implements（实现）:
-实现，一个新的类，从父类或者接口实现所有的属性和方法，同时可以重写属性和方法，包含一些新的功能
-
-所以说。extends 一般是 类之间的继承（大） 。  implement一般是类属性之间的共性，然后提取出来。implement 自由很多
-```
 
 
 
@@ -512,22 +435,6 @@ interface fn {(x:number):void}
 
 
 
-
-
-### 2.2.20 泛型 + keyof 
-
-
-
-```ts
-function hander<t extends obj,k extends keyof obj>(key:k,value:t)()
-```
-
-
-
-
-
-
-
 ## 2.2 工具类型
 
 ### type 实现 工具类型
@@ -613,7 +520,7 @@ export interface Options extends Partial<DefaultOptons> {
 
 ## 2.2 进阶
 
-
+namespace 跟 module 是一个东西
 
 
 
@@ -631,64 +538,16 @@ export interface Options extends Partial<DefaultOptons> {
 
 
 
-
-
-
-
 ```js
 --1. 函数组件
 React.FC<unknown> = () => {}
-
-
---2. 忽略报错
-// @ts-nocheck
-忽略整一个文件的报错
-
---3.TABLE 没用等一下删掉
-
---4.useState<boolean>(false);
-
---5. 例如我们要下载 react-router 包 。我们可以npm install @types/xxxxx包，用这种方式可以解决变量缺失的情况
-
---6.常用类型
---6.1 array 类型   
-const names2: string[] = [] // 推荐
-
---6.2 object 对象
-interface Base {
-    // 路由路径
-    path: string;
-    // 路由组件
-    component?: any;
-}
-难一点，对象里面还有一个对象
-export interface IRoute extends Base {
-  children?: IRoute[];
-}
-
---6.3  
-
-
-
-
-```
-
-
-
-### 2.2.3 一些可能出现的bug
-
-```
-.d.ts
-
-
-tsconfig.json 引入后才有效
 ```
 
 
 
 
 
-### 2.2.4 {id:1;name:{xx:23}}
+### 2.2.4 {id:1;name:{xx:23}} 怎么声明
 
 ```ts
 interface user {
@@ -709,15 +568,6 @@ let ob: user = {
 
 
 
-### 2.2.5  [{},{},{}]
-
-```ts
-type roleType = Array<{
-  value:string,
-  label:string
-}>
-```
-
 
 
 ### 2.2.6 window |  sdk 声明
@@ -733,90 +583,7 @@ type roleType = Array<{
 
 
 
-
-
-
-
-### 2.2.4 项目常用
-
-```ts
-
-
-
-document.querySelector(".src").focus();
-document.querySelector(".src").innerText="d23232sa"
-document.querySelector(".red-button").click()
-
-
-
-// 0 . 可以像右边一样引入 ///  <reference path = "index.d.ts" />
-///  <reference path = "index.d.ts" />
-
-// 1.复杂一点的变量
-
-// 3. 不同格式文件
-// 这里需要在 index.d.ts中  declare module '*.png';
-import A from "1.png"
-
-// 4.命名空间 declare namespace API 
-/**
- declare namespace API {
-    interface Result {code?:number;message?:string; data:object
-    }
- }
- */
-let Result : API.Result = {
-    code:200,
-    data:{
-    }
-}
-
-// 5. 函数的写法 declare function getName(params:string) :void
-// getName()
-
-// 6.类的写法  declare class test {id:number;static name ="test";constructor(param:number){this.id=param}}
-// new test(2)
-
-// 7. 一些奇怪的对象 declare function $(param:string):void
-function $(){}
-
-// 8.模块   这玩意 不适合 弄变量 第三方模块用吧
-/**
- declare module abcd {
-  export function abcdF(param:string):void
-  export let id:number;
-}
- */
-module abc {
-    export let id:number;
-}
-abc.id = 3
-// 引入模块
-
-// temp()
-// console.log(temp)
-
-// 9.umd 就是可以通过全局变量访问到，也可以通过require的方式访问到 
-// 其实就是按照全局的方式写d.ts（modules），写完后在最后加上declare namespace "xxx"的描述：
-
-//10.扩展内置对象 的 某一个 方法  
-/**
-  interface Array(){
-    quickSort(arr:Array<number>):Array<number>
-  }
- */
-
-
-// 11.
-list
-
-```
-
-
-
-
-
-### 2.2.5 写插件的一些思路
+### 2.2.5 写插件的一些思路 | 单例
 
 
 
@@ -945,153 +712,49 @@ new test().errorGet()
 
 
 
+
+
+### 2.2.8 inter/顺变-逆变
+
+
+
+
+
+infer 
+
+- 协变位置构建联合类型
+- 逆变位置构建交叉类型
+
+
+
+### 2.2.9  extends
+
+```ts
+// extends 有点难度，泛型的时候会比较好用 | a 可以 给 b 分配 是 true
+/**
+ * @des 有三种含义 child extend parent
+ * @des1 变量中直接用表示约束
+ * @des2 变量外用表示扩展
+ * @des3 条件类型： 继承xxx。不是可以代替的继承就是false。?可选链 也可以发挥作用。三元表达式 type A2 = 'x' | 'y' extends 'x' ? string : number; // number
+ * @des3 分配条件类型：child 是一个泛型 + 联合类型 。会用分配率然后进行 合并 类型 type myexclude<all,item> =   all extends item ? never : all  // 防止条件判断中的分配 可以用 [ ] 框起来 type P<T> = [T] extends ['x'] ? string : number;
+ */
+
+
+type MyExclude<t,u> = t extends u ? never : t
+type MyExcludeDemo = MyExclude<MyParam,"id">
+```
+
+
+
+
+
+
+
+
+
 ## 2.3公用的一些utils ts
 
 测试可以：tsc xxx.ts
-
-### 2.3.1 eventbus
-
-```js
-class eventBus {
-    eventBus:{
-        [key:string]:any
-    }
-    constructor() {
-        this.eventBus = {
-            // 保存类型与回调的容器
-            event: {
-            }
-        }
-    }
-    // 绑定事件
-    on = (name:string, event:Function) => {
-        this.eventBus.event[name]=event
-    };
-    // 触发事件
-    emit = (name:string, data:any) => {
-        // 判断
-        if (this.eventBus.event[name] ) {
-            this.eventBus.event[name](data)
-        }
-    }
-
-    // 事件解绑
-    off = (eventName:string) => {
-        // 若传入了 eventName
-        if (this.eventBus.event.hasOwnProperty(eventName)) {
-            // 只是删除对应的事件回调
-            delete this.eventBus.event[eventName];
-        } else {
-            this.eventBus.event = {};
-        }
-    }
-    say = ()=>{
-        console.log(this.eventBus)
-    }
-}
-let eventbus = new eventBus()
-export {eventbus}
-
-// 使用类似于
-父文件中
-eventbus.on("测试", (data: string) => {
-    console.log("触发了该死的事件:" + data)
-})
-
-子文件中
-import {eventbus} from "./eventBus"
-eventbus.emit("测试",type)   
-
-```
-
-
-
-
-
-### 2.3.2  cache
-
-工程化中最好是新建一个cache文件夹，然后里面放上自己的文件
-
-```ts
-class Cache {
-    cacheData: {
-        [key: string]: Array<object>
-    }
-    constructor() {
-        this.cacheData = {
-        }
-    }
-    set(name: string, item: any) {
-        this.cacheData[name] = item
-    }
-    get(name: string) {
-        const res = this.cacheData[name]
-        return res
-    }
-    delete(name: string) {
-        Reflect.deleteProperty(this.cacheData, name);
-    }
-    add(name: string, data: object) {
-        if (this.cacheData[name]) {
-            this.cacheData[name].push(data)
-        }else{
-            this.cacheData[name] = []
-            this.cacheData[name].push(data)
-        }
-    }
-}
-
-export default new Cache()
-```
-
-
-
-### 2.3.3 error
-
-```ts
-
-import cache from "./cache"
-
-interface baseConfig {
-    logConfig: {
-        isLog: boolean
-    }
-}
-interface errMsgConfig {
-    code: number
-    msg: string
-    data: object
-    date:string
-}
-class errLog {
-    public baseConfig : baseConfig
-    constructor(param: baseConfig) {
-        this.baseConfig = Object.assign(this.init(), param)
-    }
-    private init(): baseConfig {
-        return <baseConfig>{
-            logConfig: {
-                isLog: true,
-            }
-        }
-    }
-    public errLogGet() {
-        return cache.get("errorLog")
-    }
-    public errLogAdd(param: errMsgConfig) {
-        param.date=""+""+new Date().getFullYear()+new Date().getMonth()+new Date().getDay()+new Date().getHours()+new Date().getMinutes()+new Date().getSeconds()
-        cache.add("errorLog",param)
-        return cache.get("errorLog")
-    }
-   
-}
-
-export default new errLog({
-    logConfig:{
-        isLog:true, 
-    }
-}) 
-```
 
 
 
@@ -1355,38 +1018,6 @@ console.log(result)
 
 
 
-### 2.4.1 返回值泛型
-
-
-
-```ts
-首先是定义类型
-export interface Repo<T> {
-  code: number | string;
-  data: T;
-  body?: T;
-  message: string;
-}
-export interface UploadPolicy {
-  formFields: string;
-  headerFields: string[];
-}
-
-
-调用起来
-return request<Repo<UploadPolicy>>(encryptionUrl, {
-    baseURL: cgwUrl,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...header,
-    },
-    data,
-  });
-```
-
-
-
 
 
 ### 2.4.2  数据状态定义
@@ -1447,92 +1078,6 @@ AppStatus[
 AppStatus["online"] // 已上线
 AppStatusEnum[item.appStatus??'notOnline'] //"online"
 ```
-
-
-
-
-
-### 2.4.3 record 正确用法
-
-```js
-import type { UploadFile } from 'antd/es/upload/interface';
-
-export type ConfigCategoryType =
-  | 'appIcon'
-  | 'appScreenShots'
-  | 'copyrightCertificates'
-  | 'uploadMultipart';
-
-interface CategoryUnitType {
-  accept: string[];
-  maxCount: number;
-  formatTitle: string;
-  limit: (file: UploadFile<File>) => Promise<string>;
-}
-
-type ConfigType = Record<ConfigCategoryType, CategoryUnitType>;
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-前者一旦确定了类型后会进行校验。后者永不校验。都是 top level
-
-。
-
-```
-我们可以在赋值的时候 as unknown as xxx
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

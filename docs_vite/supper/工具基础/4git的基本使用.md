@@ -64,52 +64,13 @@ git remote -v //查看源
 
 
 
-## 4.2 基本使用(工作常用)
-
-
-
-.gitignore 里面是不被提交的文件,格式类似于
-
-```
-node_modules/
-public/
-```
-
-
-
-
-
-### 从0搭建
-
-```js
-git clone
-git pull //命令的作用是:取回远程主机某个分支的更新，再与本地的指定分支合并.有冲突就解决冲突
-git add .
-git commit -m "你的提交信息"
-git push origin master
-
-```
-
-### clone别人的
-
-```js
-git clone 你的git地址
-//如果leader 要你切换分支 git switch 或者git branch xx
-git switch dev
-git pull //命令的作用是:取回远程主机某个分支的更新，再与本地的指定分支合并.有冲突就解决冲突
-git add .
-git commit -m "你的提交信息"
-git push origin dev
-
-```
 
 
 
 
 
 
-
-## 4.3 删除仓库
+### 4.1.1 删除仓库
 
 ```js
 git remote remove test //删除其中一个仓库
@@ -118,7 +79,7 @@ git remote rm origin //删除掉远程仓库
 
 
 
-## 4.4 版本控制
+### 4.1.4 版本控制
 
 ```js
 git log --pretty=format:'%h: %s'	//加参。简洁查看推荐这种。感觉跟reflog差不多。但是各有各的好处
@@ -141,7 +102,7 @@ git status	//（看一下是不是有文件没提交）
 
 
 
-## 4.5 提交树美化
+### 4.1.5 提交树美化
 
 建议在sourcetree这种地方看提交树
 
@@ -186,7 +147,7 @@ pick 1e8e76b 17：37
 
 
 
-## 4.6 合并代码
+### 4.1.6 合并代码
 
 merge 合并别人的
 
@@ -197,7 +158,7 @@ git merge main
 
 
 
-## 4.7 标签管理
+### 4.1.7 标签管理
 
 ```js
 git tag v1.0	//打标签
@@ -232,7 +193,7 @@ git push origin 0.0.2
 
 
 
-## 4.8 合并冲突
+### 4.1.8 合并冲突
 
 ```js
 git pull 和 git fetch + git merge 但是git fetch可以看到更新情况，也就更安全
@@ -262,6 +223,172 @@ git pull origin master --allow-unrelated-histories
 左边是一开始的，右边是已经更改的
 下面是最终提交的
 ```
+
+
+
+
+
+### 4.1.9 github 提 issue 
+
+首先 fork 一下，然后 git clone fork 的 仓库。然后 切换分支 提交 分支到自己的地方 。就可以去他的项目提 pr了
+
+
+
+### 4.1.10 cherry-pick
+
+把指定的[commit](https://so.csdn.net/so/search?q=commit&spm=1001.2101.3001.7020)，拉到一个当前的分支上。
+
+```js
+ git cherry-pick commitID
+```
+
+
+
+
+
+## 4.2 git hook | husky
+
+```js
+githook是原理是.git文件夹里面有hooks里面有很多hook，我们只需要写bash脚本，特定的时间就会做特定的事情
+husty会自定义目录执行特定时间脚本（主要是precommit)
+
+为了代码的规范有必要进行 log 规范化检查。而检查的入口可以从 git hook 切入，而 git hook 
+
+钩子都被存储在 Git 目录下的 hooks 子目录中。 也即绝大部分项目中的 `.git/hooks`，默认存在的都是示例，其名字都是以 `.sample` 结尾，如果你想启用它们，得先移除这个后缀。把一个正确命名且可执行的文件放入 Git 目录下的 hooks 子目录中，即可激活该钩子脚本。 这样一来，它就能被 Git 调用。
+
+你可以用来检查消息、检查代码，可以用来触发任意流程，譬如自动规范检查等等
+```
+
+
+
+```ts
+有两种类型的hook
+
+一种是服务端的hook，  receive之类的
+一种是客户端的hook。precommiit之类的
+
+有几种钩子的情况
+msg(应用程序消息)
+pre(应用前批处理)
+post(应用程序批处理后)
+
+hook，这其实是计算机领域中一个很常见的概念，hook 翻译过来的意思是钩子或者勾住，而在计算机领域中则要分为两种解释:
+
+拦截消息，在消息到达目标前，提前对消息进行处理
+对特定的事件进行监听，当某个事件或动作被触发时也会同时触发对应的 hook
+也就是说 hook 本身也是一段程序，只是它会在特定的时机被触发。
+
+在提交的规范中我们一般有以下的规范
+feat：新功能（feature）
+fix：修补bug
+docs：文档（documentation）
+style： 格式（不影响代码运行的变动）
+refactor：重构（即不是新增功能，也不是修改bug的代码变动）
+test：增加测试
+chore：构建过程或辅助工具的变动
+
+
+```
+
+
+
+### 4.2.1 husky 初始化
+
+
+
+husky的原理是在.git/config文件的[core]中添加 hooksPath = .husky就是原理了
+
+
+
+step1:初始化
+
+```js
+命令行中
+npm install husky@8 -D
+package.json中添加
+"scripts": {	
+    "prepare": "husky install",
+},
+        
+```
+
+npm run prepare，构建一般目录 ~的这个目录直接删掉就好了
+
+
+
+### 4.2.2  添加钩子
+
+我们还可以在husky文件夹下面新建precommit，我们写入
+
+```sh
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npm run lint
+是一样的效果
+```
+
+
+
+校验名字-这玩意我写的贼牛皮-.husk//commit-msg
+
+```python
+#!/usr/bin/env python
+# coding=utf-8
+#
+# commit msg check
+import sys
+import re
+import io
+import os
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+TIPS_INFO = '''
+不符合commit规范,提交失败!
+
+commit规范:
+类型 详细消息-具体请看readme
+
+规范样例：
+feat:类型是feat表示在代码库中新增了一个功能 git commit -m "feat: 增加了xxx功能"
+
+！！！！提交失败！！！！
+'''
+
+def check_commit_line1_format(msg):
+    print(msg)
+    # regOther = r'\S{5,} (.){10,100}' ^fix:|^feat: ((修复了)|(增加了))(.){2,100}功能
+    regOther = r'^fix|^feat|^docs|^style|^refactor|^test|^chore (.){1,100}'
+    matchObj = re.match(regOther, msg)
+    return matchObj
+
+if __name__=="__main__":
+    # print("进行lint扫描")
+    # os.system("npm run lint")
+    # print("进行audit扫描")
+    # os.system("npm audit")
+    print("--------husky校验中--------")
+    # print(sys)
+    with open(sys.argv[1], 'r',encoding="utf-8") as f:
+        for line in f:
+            if (check_commit_line1_format(line)):
+                sys.exit(0)
+            else:
+                print(TIPS_INFO)
+                sys.exit(1)
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -379,35 +506,6 @@ ssh -T git@github.com
 ```
 
 
-
-
-
-## 4.11 github 提 issue 
-
-首先 fork 一下，然后 git clone fork 的 仓库。然后 切换分支 提交 分支到自己的地方 。就可以去他的项目提 pr了
-
-
-
-
-
-
-
-## 4.12 git hook
-
-```js
-githook是原理是.git文件夹里面有hooks里面有很多hook，我们只需要写bash脚本，特定的时间就会做特定的事情
-husty会自定义目录执行特定时间脚本（主要是precommit)
-```
-
-
-
-## 4.13 cherry-pick
-
-把指定的[commit](https://so.csdn.net/so/search?q=commit&spm=1001.2101.3001.7020)，拉到一个当前的分支上。
-
-```js
- git cherry-pick commitID
-```
 
 
 

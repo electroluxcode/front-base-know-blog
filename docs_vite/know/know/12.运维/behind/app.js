@@ -4,8 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const http = require('http');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 
 const multer = require('multer')
 
@@ -26,8 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
 
 //跨域
 app.all('*',function(req,res,next){
@@ -50,8 +47,8 @@ app.get('/api/get', function(req, res) {
     data:req.body
   });
 });
-// app.use(express.text());
-//post 接收参数测试 application/json 的有效 {id:56}
+
+
 app.post('/api/post', function(req, res) {
   // json 的才有效
 
