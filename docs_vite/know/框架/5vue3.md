@@ -2,14 +2,12 @@
 
 [[toc]]
 
-
+https://cn.vuejs.org/guide/built-ins/teleport.html
 
 ## 5.？奇奇怪怪的报错
 
 ```js
---1.Type number trivially inferred from a number literal, remove type annotation  @typescript-eslint/no-inferrable-types?   
-s:原因是：typescript 对代码做了类型推断 不用再进行指明number类型
-s：解决方法是：@typescript-eslint/no-inferrable-types："off"
+
 
 --2.元素隐式具有 “any“ 类型，因为类型为 “string“ 的表达式不能用于索引类型 “Object“。 在类型 “Object“ 上找不到具有类型为 “string“ 的参数的索引签名
 s:tsconfig.json中compilerOptions里面新增忽略的代码，如下所示，添加后则不会报错："suppressImplicitAnyIndexErrors": true
@@ -17,6 +15,7 @@ s:tsconfig.json中compilerOptions里面新增忽略的代码，如下所示，�
 注意 这玩意和strict：true冲突
 
 --3.Cannot access ambient const enums when the '--isolatedModules' flag is provided.此配置开启后不允许采用常量枚举值作为属性key，同时要求类型导入导出必须明确
+
 例如：export { TriggerOpTypes } 会报错
 s："isolatedModules": true, 设置成false就可以了
 
@@ -27,6 +26,8 @@ eslinttrc.js中添加
 rules: { 
     "prefer-const": "off"
   },
+      
+      
 ```
 
 
@@ -284,7 +285,7 @@ app.component('HelloWorld1',HelloWorld).use(router).use(globalRegister).mount('#
 
 ### 5.0.6  pinia的使用
 
-#### --1. 安装
+#### 1. 安装
 
 ```shell
 npm install pinia -S
@@ -292,7 +293,7 @@ npm install pinia -S
 
 
 
-#### --2. main.ts中
+#### 2. main.ts中
 
 ```ts
 import {createPinia} from 'pinia'
@@ -305,7 +306,7 @@ app.use(store)
 
 
 
-#### --3. src/store下面新建modules文件夹和index.ts文件
+#### 3. src/store下面新建modules文件夹和index.ts文件
 
 store/index.ts
 
@@ -357,7 +358,7 @@ export default useUserStore;
 
 ```
 
-#### --4. 使用
+#### 4. 使用
 
 ```js
 import useStore from '@/store'
@@ -370,11 +371,125 @@ user.actionPinia()
 
 
 
+#### 5. 项目中的基础使用
+
+针对这个项目。我们可以构建基础的文件
+
+> stores/BIScreen/BIScreen.ts
+
+```ts
+import { defineStore } from 'pinia';
+
+export const useMapStore = defineStore('MapStatus', {
+  state: () => {
+    return {
+        data:{
+            src:"ht"
+        }
+    };
+  },
+  getters:{
+    coordsGetter():any {
+      return this.data
+    }
+  },
+  actions: {
+    setCoords(newCoords) {
+      this.data = newCoords;
+    },
+  },
+});
+
+```
+
+
+
+- `id`:这里的 `MapStatus` 保证不重复即可
+
+- `state`:数据层
+
+- `getters`: 对数据层的数据有能力做两次包装(这个项目中不用这个)
+
+  ```ts
+  import { useMapStore } from "@/stores/BIScreen/BIScreen";
+  const MapStatus = useMapStore();
+  // 这样可以直接访问数据
+  MapStatus.coordsGetter
+  ```
+
+  
+
+
+
+##### 1.1 共享数据
+
+这里讲一下数据取出的几种方式
+
+###### 1.1.1  不保留响应式
+
+```ts
+import { useMapStore } from "@/stores/BIScreen/BIScreen";
+const MapStatus = useMapStore();
+// 这样可以直接访问数据
+MapStatus.data
+```
+
+###### 1.1.2 保留响应式
+
+```ts
+import { useMapStore } from "@/stores/BIScreen/BIScreen";
+import { storeToRefs } from "pinia";
+const MapStatus = useMapStore();
+const { data } = storeToRefs(MapStatus);
+data.value
+```
+
+
+
+##### 1.2 改变数据
+
+
+
+通过 action 实现
+
+```ts
+import { useMapStore } from "@/stores/BIScreen/BIScreen";
+const MapStatus = useMapStore();
+setTimeout(() => {
+  MapStatus.setCoords("我变化了");
+}, 6000);
+```
+
+
+
+
+
+##### 1.3 监听数据改变
+
+```ts
+import { useMapStore } from "@/stores/BIScreen/BIScreen";
+const MapStatus = useMapStore();
+const subscribe = MapStatus.$subscribe(
+  (mutation, state) => {
+    console.log("变化:",state);
+  },
+  //   detached值为 true 时，即使所在组件被卸载，订阅依然在生效
+  { detached: false }
+);
+```
+
+
+
+
+
 
 
 
 
 ### 5.0.7 watch |  watchEffect |  compute
+
+- watchEffect 能够自动收集你的依赖。但是他是同步收集依赖，这一点会徒增心智负担
+- watch 能够手动收集依赖
 
 ```ts
 let message2 = ref<string>('')
@@ -423,25 +538,47 @@ const count = computed(() => {
 
 
 
-### 5.0.9 插槽
+### 5.0.9 vmodel
 
-```html
-父组件：
-<child :tochild="msg" @tofather="tofather">
-      <template v-slot:header >  </template></child
->
+- vue3 原理是 update：model-value  +   :model-value‘
 
-子组件：
-<template>
-  <slot name="header" style="color: red;">插槽里面的值</slot>
-  <div>子组件</div>
-  <button @click="children">子组件的按钮</button>
-</template>
-```
+  内部的value 绑定给 model-value 。监听 update:modelValue 事件
+
+  假如是 v-model:title="bookTitle" 那么 子组件 就需要 update:emit('update:title', $event.target.value) 这样子，后面的值可以是数组，前面的那个值也可以是  v-model:title1 v-model:title2这样子
+
+  ```js
+  <input
+    :model-value="searchText"
+    @input="searchText = $event.target.value"
+  />
+  
+  使用起来
+  父： <Child v-model="message"/> 
+  子
+  
+  const props = defineProps([
+    "modelValue", // 接收父组件使用 v-model 传进来的值，必须用 modelValue 这个名字来接收
+  ]);
+  
+  const emit = defineEmits(['update:modelValue'])
+  emit('update:modelValue', event.target.value)
+  ```
+
+- vue2 的原理是
+
+  ```ts
+  value + input 事件 
+  ```
+
+  
 
 
 
 
+
+
+
+、
 
 ### 5.0.10 ref 
 
@@ -960,84 +1097,957 @@ module.exports = {
 
 ### 5.4.0 基本
 
+- vue3的自定义指令周期变成了 本身周期的周期
+- created 元素初始化的时候
+- beforeMount 指令绑定到元素后调用 只调用一次
+- mounted 元素插入父级dom调用
+- beforeUpdate 元素被更新之前调用
+- update 这个周期方法被移除 改用updated
+- beforeUnmount 在元素被移除前调用
+- unmounted 指令被移除后调用 只调用一次
+
+vue2 
+
+- (vue2:mounted)bind:只调⽤⼀次，指令第⼀次绑定到元素时调⽤，⽤这个钩⼦函数可以定义⼀个绑定时执⾏⼀次的初始化动作。
+- inserted:被绑定元素插⼊⽗节点时调⽤（⽗节点存在即可调⽤，不必存在于document中）
+-  (vue2:updated)update:被绑定于元素所在的模板更新时调⽤，⽽⽆论绑定值是否变化。通过⽐较更新前后的绑定值，可以忽略不必要的模板更新
+-  componentUpdated:被绑定元素所在模板完成⼀次更新周期时调⽤
+-  unbind:只调⽤⼀次，指令与元素解绑时调⽤。
+
+
+
+
+
+### 5.4.1 封装示例
+
+
+
+#### 5.4.1.1  业务文件
+
+src/directive/hasButton.ts
+
 ```js
-vue3的自定义指令周期变成了 本身周期的周期
---1.(vue2:mounted)bind:只调⽤⼀次，指令第⼀次绑定到元素时调⽤，⽤这个钩⼦函数可以定义⼀个绑定时执⾏⼀次的初始化动作。
---2. inserted:被绑定元素插⼊⽗节点时调⽤（⽗节点存在即可调⽤，不必存在于document中）。
---3. (vue2:updated)update:被绑定于元素所在的模板更新时调⽤，⽽⽆论绑定值是否变化。通过⽐较更新前后的绑定值，可以忽略不必要的模板更新。
---4. componentUpdated:被绑定元素所在模板完成⼀次更新周期时调⽤。
---5. unbind:只调⽤⼀次，指令与元素解绑时调⽤。
-```
+import type {  Directive } from 'vue';
 
+function checkPermission(value: string) {
+    let isExist = false;
+    let userlogin = JSON.parse(localStorage.getItem("userlogin") || "[]");
+    userlogin = {
+        hasPermission: ["edit", "add", "del"]
+    }
+    let buttonArr = userlogin.hasPermission
+    //判断是否按钮有权限
+    if (buttonArr.includes(value)) {
+        isExist = true;
+    }
+    return isExist;
+}
 
-
-
-
-
-
-### 5.4.1 权限
-
-#### 5.4.1.1 src/directive/hasButton.ts
-
-
-
-```js
-export const hasPermission = {
-    install(Vue:any) {
-        //自定义指令v-has：
-        Vue.directive('has', {
-            mounted(el:any, binding:any, vnode:any) {
-                if (!checkPermission(binding.value)) {
-                    // let tooltipNode = vnode.children.find((childrenCmpt:any) => childrenCmpt.component?.type.name == 'ElTooltip')
-                    // tooltipNode.component.props.disabled = false
-                    console.log()
-                    vnode.el.style.cssText=`display:none`
-                }
-            },
-        });
-        //权限检查方法
-        function checkPermission(value:any) {
-            let isExist = false;
-            let userlogin = JSON.parse(localStorage.getItem("userlogin") || "[]");
-            userlogin = {
-                hasPermission:["edit","add","del"]
-            }
-            let buttonArr = userlogin.hasPermission
-            //判断是否按钮有权限
-            if (buttonArr.includes(value)) {
-                isExist = true;
-            }
-            return isExist;
+export const hasPermission: Directive = {
+    created(el: any, binding: any) {
+        console.log("进入权限判断")
+        console.log("sadasdsadasd", el, binding.value)
+        if (!checkPermission(binding.value)) {
+            console.log("没有这个的权限")
+            el.style.cssText = `display:none`
         }
     }
 };
-export default hasPermission;
-
-
-
-
+export function setupPermission(app: any) {
+    app.directive('has', hasPermission);
+}
 ```
 
-#### 5.4.1.2 src/main.ts
+- 简单来说就是 在`生命周期`中注册方法，然后暴露一个带着app传参的` function`出去(app在之中需要 调用 `app.directive('has', hasPermission);`)。
+
+  
+
+
+
+#### 5.4.1.2 主文件引入
+
+src/main.ts
 
 ```ts
 import permission from './directive/permission/hasButton'
 app.use(permission)
 ```
 
-#### 5.4.1.2 src/test.vue
+#### 5.4.1.3  调用
 
 ```vue
-<span v-has='"del"'>
-          <el-tooltip placement="top" content="无权访问,请联系管理员" type="tooltip" disabled>
-            <span>
-              <el-button type="primary" >删除</el-button>
-            </span>
-          </el-tooltip>
-        </span>
+<template>
+  <div v-has="'del'">
+    <Child >
+        <template v-slot:test="slotName"> 
+          {{ slotName.sctest }}
+        </template>
+    </Child>
+  </div>
+  <div v-has="'de3l'">
+      我是de3l
+  </div>
+</template>
+<script setup lang="ts">
+import Child from "./components/children.vue";
+</script>
 ```
 
 
 
 
+
+
+
+
+
+## 5.5  slot
+
+### 5.5.0 默认插槽
+
+- 父组件 在  children 的 temple 元素中 `#default`
+
+```html
+
+
+父组件：
+<template>
+  <div>
+    <Child>
+        <template #default> 
+            这是我要展示的数据ddddd
+        </template>
+    </Child>
+  </div>
+</template>
+
+<script setup lang="ts">
+import Child from "./components/children.vue";
+</script>
+
+子组件：
+<template>
+    <div >
+       <div>下面是展示的数据</div>
+       <slot></slot>
+    </div>
+</template>
+```
+
+
+
+
+
+### 5.5.1 子组件默认
+
+就是父传递给子的时候，子组件有一个默认的内容 。类似于这样子
+
+```html
+<slot>xxxxx </slot>
+```
+
+
+
+
+
+### 5.5.2 具名插槽
+
+- 父组件在 children 的 temple 元素中 v-slot:`你的name`
+- 子组件中 slot 的 元素中 需要给一个 name 属性 位 `你的name`
+- `vue3`必须把`v-slot`写在`template`标签中,vue2 什么标签都能够写入
+
+```html
+父组件：
+<child :tochild="msg" @tofather="tofather">
+      <template v-slot:header >  </template>
+</child>
+
+子组件：
+<template>
+  <slot name="header" style="color: red;">插槽里面的值</slot>
+  <div>子组件</div>
+  <button @click="children">子组件的按钮</button>
+</template>
+```
+
+
+
+### 5.5.3  动态插槽
+
+- 父组件 在children 的 temple 元素中 #[xxxx] : 
+- 子组件不用变
+
+```vue
+父
+<template>
+  <div>
+    <Child>
+        <template #[slotName]> 
+            这是我要展示的数据ddddd
+        </template>
+    </Child>
+  </div>
+</template>
+<script setup lang="ts">
+import {ref} from "vue"
+import Child from "./components/children.vue";
+let slotName = ref("test")
+</script>
+
+子
+<template>
+    <div >
+       <div>下面是展示的数据</div>
+       <slot name="test"></slot>
+    </div>
+</template>
+
+<script setup lang="ts" >
+</script>
+
+<style scoped>
+</style>
+
+```
+
+
+
+### 5.5.4 作用域插槽
+
+`插槽内容`是无法访问子组件的数据的，这种方式能够访问
+
+- 父组件中 ：在 具名插槽的基础上面 给一个 `=`  然后就可以在 temple 用双括号 使用 子组件下面的 属性了 。vue2 中  slot-scope="你的属性也可以" 
+- 子组件中：slot上面可以写入输出的属性
+
+```html
+父组件
+<template>
+  <div>
+    <Child>
+        <template v-slot:test="slotName"> 
+          {{ slotName.sctest }}
+        </template>
+    </Child>
+  </div>
+</template>
+<script setup lang="ts">
+import Child from "./components/children.vue";
+</script>
+
+子组件
+<template>
+    <div >
+       <div>下面是展示的数据</div>
+       <slot name="test" sctest="我是sctest的数据"></slot>
+    </div>
+</template>
+<script setup lang="ts" >
+</script>
+<style scoped>
+</style>
+```
+
+
+
+## 5.6 mixin 
+
+不推荐使用，因为会导致不清晰的数据来源 
+
+
+
+
+
+
+
+## 5.7 vmodel
+
+
+
+### 5.7.1 基础(单个 model)
+
+我们先要知道 vmodel 有两种大情况
+
+- 原生组件:  这个组件 被解析之后  变成 `:value` + `@input`
+- 如果是 vue 组件 会变成 `:modelValue` + `update:modelValue`
+
+首先我们要明白我们 如果直接写vmodel，如下面代码
+
+```vue
+父组件
+
+<template>
+    <div>
+        这是vmodel 的示例------{{ message }}
+        <child v-model="message"></child>
+    </div>
+</template>
+
+<script setup lang="ts">
+import {ref, reactive} from "vue"
+
+let message = ref<any>("我是父组件的数据-111")
+import child from "./component/children.vue"
+</script>
+
+子组件
+
+<template>
+    <div>
+        我是 vmodel 的 children------{{ props }}
+
+
+    </div>
+</template>
+
+<script setup lang="ts">
+
+const props = defineProps([
+  "modelValue", // 接收父组件使用 v-model 传进来的值，必须用 modelValue 这个名字来接收
+]);
+
+const emit = defineEmits(['update:modelValue'])
+setTimeout(() => {
+    emit('update:modelValue', "我是子组件回传的数据")
+}, 2000);
+
+
+</script>
+
+<style scoped>
+
+</style>
+```
+
+- prop 中会显示 
+
+  ```ts
+  { "modelValue": "我是子组件回传的数据" }
+  ```
+
+  也就是说 我们在 写 v-model = "xx"  其实等于 
+
+  ```ts
+  :modelValue="xx"
+  @update:modelValue="newValue => xx = newValue"
+  ```
+
+  
+
+### 5.7.2 多个(多model)
+
+区别主要在于
+
+- **语法**:**父组件** 需要 `v-model:你自己的model名字="xxx"` 。**子组件**`defineProps`里面的数据就不需要 model 了 直接 是 
+
+  ```ts
+  const props = defineProps([
+    "test", // 接收父组件使用 v-model 传进来的值，必须用 modelValue 这个名字来接收
+    "test1",
+  ]);
+  ```
+
+  然后是更新的方法就是 
+
+  ```ts
+  const emit = defineEmits(['update:test'])
+  setTimeout(() => {
+      emit('update:test', "我是子组件回传的数据")
+  }, 2000);
+  ```
+
+
+
+完整
+
+```vue
+父组件
+
+<template>
+    <div>
+        这是vmodel 的示例------{{ message }}
+        <child v-model:test="message" v-model:test1="message1"></child>
+    </div>
+</template>
+
+<script setup lang="ts">
+import child from "./component/children.vue"
+import {ref, reactive} from "vue"
+let message = ref<any>("我是父组件的数据-000")
+let message1 = ref<any>("我是父组件的数据-111")
+
+</script>
+
+
+子组件
+<template>
+    <div>
+        我是 vmodel 的 children------{{ props }}
+    </div>
+</template>
+
+<script setup lang="ts">
+
+const props = defineProps([
+  "test", // 接收父组件使用 v-model 传进来的值，必须用 modelValue 这个名字来接收
+  "test1",
+]);
+
+
+
+const emit = defineEmits(['update:test'])
+setTimeout(() => {
+    emit('update:test', "我是子组件回传的数据")
+}, 2000);
+
+
+</script>
+
+<style scoped>
+
+</style>
+```
+
+
+
+
+
+### 5.7.3  vmodel 修饰符
+
+- 这里主要看 .lazy 修饰符号， 不加上.lazy 的话，那么 input 每一次进行 输入 都会触发双向绑定，如果添加上去的话，那么 在input 失去焦点 又或者是 点击enter 的时候就会触发 
+
+
+
+**关于自定义修饰符号**
+
+- 传参的 子组件那里。类似于 `.capitalize` 这样子 ，可以通过 value.modelModifiers.capitalize 访问
+
+
+
+
+
+
+
+
+
+
+
+## 5.8  provide/inject
+
+就是 provide/inject 的东西而已
+
+```js
+父组件 
+import { provide } from "vue";
+import { TopParamType,DefaultProjectData } from "@/type/Param";
+
+let Project = ref<TopParamType>(DefaultProjectData);
+provide("Project", Project);
+    
+
+子组件
+import { inject, watch } from "vue";
+import { TopParamType, DefaultProjectData } from "@/type/Param";
+let InjectParam = inject("Project", DefaultProjectData);
+
+
+watch(
+  InjectParam,
+  (newv) => {
+    // temp = HandleWatchData(newv,"soilPressure")
+    // if (pageInstance.refs.echart) {
+    //   (pageInstance.refs.echart as any).handelSyncData(SumCurveConfig(temp));
+    // }
+  },
+  { immediate: true, deep: true }
+);
+
+
+
+// 修改父
+let InjectParamUpdate = inject("ProjectUpdate",DefaultProjectData)  as any
+setTimeout(() => {
+  InjectParamUpdate("ds33ds")
+}, 2200);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 5.9 透传 
+
+- inheritAttrs 选项为 false 可以禁用  属性透传
+- 访问透传属性可以 通过 this.$attr 来拿到。想要指定的 组件 实现 绑定，可以 v-bind="$attrs"
+
+
+
+
+
+
+
+
+
+## 5.10 component
+
+
+
+### 5.10.1 函数式组件 
+
+
+
+#### 5.10.1.1 tsconfig.json 中开启
+
+```ts
+"jsx": "preserve"
+```
+
+
+
+```ts
+暴露东西出去就好了 emit doSearch , 然后外部接收
+```
+
+
+
+#### 5.10.1.2  写入一个js
+
+```ts
+
+import { createApp } from "vue";
+let log = (data) => {
+    console.log("你终于点log了")
+    
+}
+const MessageBox = {
+    props:{
+        msg:{
+            type:String,
+            required:true
+        },
+        close:{
+            type:Function,
+            required:true
+        }
+    },
+    render(ctx){
+        const {$props,$emit} = ctx;
+        console.log("props",$props)
+        return <div>
+            --{$props}--
+            <Button onclick={()=>{$props.close()}}>这里是按钮</Button>
+        </div>
+    }
+}
+
+
+function ShowComponent(){
+    // 挂载到div 下面
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    let app = createApp(MessageBox,{
+        msg:"测试",
+        close(){
+            // app.unmount(div);
+            div.remove()
+        },
+        onclick(){
+            console.log("见鬼")
+        }
+    })
+    app.mount(div)
+    // const app = 
+}
+
+export {ShowComponent}
+```
+
+
+
+css 可以用 @styils/vue 来做
+
+
+
+### 5.10.2 基本结构
+
+#### 5.10.2.1 父
+
+```vue
+<template>
+  <div>
+    我是父组件
+    <children :visible="visible" :ref="(el) => FormSet(el, 'd')">
+      <template v-slot:test ></template>
+    </children>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted, defineProps, reactive, defineExpose } from "vue";
+import children from "./children.vue";
+let visible = true;
+let FileUploadFormRef = ref<any>({});
+const FormSet = (el, type: string) => {
+    FileUploadFormRef.value[type] = el;
+};
+onMounted(() => {
+  console.log(FileUploadFormRef.value)  
+})
+</script>
+
+<style scoped></style>
+
+```
+
+
+
+#### 5.10.2.2 子
+
+```vue
+<template>
+    <div>
+        我是子组件--{{ temp.visible }}
+        <slot name="test"></slot>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch , onMounted ,defineProps,reactive,defineExpose} from 'vue'
+let test = "3434"
+interface Props {
+    visible: boolean;
+    data:any
+}
+let temp = withDefaults(defineProps<Props>(), {
+    visible: false,
+    data: () => {
+      return {
+        data: [{ name: 'xxx.mp4' }],
+      };
+    },
+});
+defineExpose({
+    visible:test
+});
+</script>
+
+<style scoped>
+
+</style>
+```
+
+
+
+#### 5.10.2.3 component 
+
+
+
+- is 属性 可以放置 需要渲染的 组件
+
+
+
+
+
+
+
+
+
+## 5.11 keep-alive
+
+
+
+- ​    `<KeepAlive>` 默认会缓存内部的所有组件实例，但我们可以通过 `include` 和 exclude.定义，特别注意的是 `<KeepAlive include="a,b">` 像是这种写法 需要指定name ，在setup中，不需要显式的指定 name
+- 被缓存的 生命周期是  [`activated`](https://cn.vuejs.org/api/options-lifecycle.html#activated) 和 [`deactivated`](https://cn.vuejs.org/api/options-lifecycle.html#deactivated) .`activated` 在组件挂载时也会调用.并且 `deactivated` 在组件卸载时也会调用。
+
+
+
+
+
+
+
+
+
+
+
+## 5.12 Teleport
+
+`<Teleport>` 是一个内置组件，它可以将一个组件内部的一部分模板“传送”到该组件的 DOM 结构外层的位置去
+
+```vue
+<template>
+  <div class="tele">
+    <Teleport to="body">
+      <te></te>
+    </Teleport>
+  </div>
+</template>
+
+<script setup lang="ts">
+import te from "./teleport.vue";
+</script>
+
+<style scoped>
+.tele {
+  background: red;
+}
+</style>
+
+```
+
+
+
+### 5.13.1 disabled="isMobile"
+
+禁用掉这个状态
+
+## 5.13  v-memo | v-once
+
+- **`v-memo` 不能用在 `v-for` 内部。确保两者都绑定在同一个元素上**
+- `v-memo` 传入空依赖数组 (`v-memo="[]"`) 将与 `v-once` 效果相同
+-  v-once 仅渲染元素和组件一次
+
+
+
+
+
+
+
+## 5.14 this 下面
+
+因为在 setup 语法中 是在 create 阶段 ，所以不能使用 this 
+
+```ts
+getCurrentInstance
+```
+
+
+
+### 5.14.1 ref
+
+可以直接用 
+
+```vue
+<template>
+  <div>
+    我是父组件
+    <!-- <children :visible="visible" :ref="(el) => FormSet(el, 'd')">
+      <template v-slot:test ></template>
+    </children> -->
+    <children :visible="visible" ref="FileUploadFormRef">
+      <template v-slot:test ></template>
+    </children>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted, defineProps, reactive, defineExpose } from "vue";
+import children from "./children.vue";
+let visible = true;
+import { getCurrentInstance } from 'vue'
+console.log("我是this:",getCurrentInstance())
+onMounted(() => { 
+    // 这样子可以直接用
+  console.log("this:",getCurrentInstance().refs.FileUploadFormRef)
+})
+
+</script>
+
+<style scoped></style>
+
+```
+
+
+
+### 5.14.2 attr 
+
+可以拿到透传的 字段
+
+
+
+### 5.14.5 $forceUpdate |  nextTick
+
+-  nextTick：等待下一次 DOM 更新刷新的工具方法。
+
+- $forceUpdate：强制组件刷新
+
+
+
+## 5.15 Transition
+
+
+
+- 由 `v-if` 所触发的切换
+- 由 `v-show` 所触发的切换
+- 由特殊元素 `<component>` 切换的动态组件
+- 改变特殊的 `key` 属性
+
+
+
+### 5.15.1 name 
+
+传入 name 属性 例如 
+
+````html
+<Transition name="fade">
+  ...
+</Transition>
+````
+
+
+
+那么 css 中 就有 
+
+```css
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+```
+
+
+
+
+
+## 5.16  异步  | Suspense
+
+直接在 顶部来一个 await 就是异步组件
+
+### 5.16.1  子组件
+
+```vue
+<template>
+  <div>
+      加载完毕了
+  </div>
+</template>
+
+<script setup lang="ts">
+
+let sleep = () =>{
+    return new Promise((resolve,reject)=>{
+        setTimeout(() => {
+            resolve(20)
+        }, 2000);
+    })
+}
+await sleep()
+
+</script>
+
+<style scoped></style>
+
+```
+
+
+
+### 5.16.2  父组件
+
+**套一层Suspense**
+
+```vue
+<template>
+    <div>
+      <Suspense>
+        <!-- 具有深层异步依赖的组件 -->
+        <async2 />
+  
+        <!-- 在 #fallback 插槽中显示 “正在加载中” -->
+        <template #fallback> Loading... </template>
+      </Suspense>
+    </div>
+  </template>
+  
+  <script setup lang="ts">
+  import async2 from "./async.vue";
+  </script>
+  
+  <style scoped></style>
+  
+```
+
+
+
+
+
+## 5.17 ref 组件实例
+
+
+
+### 5.17.1 多ref
+
+
+
+```vue
+<template>
+  <div>
+    我是父组件
+  <children :visible="visible" :ref="(el) => FormSet(el, 'd')">
+      <template v-slot:test ></template>
+    </children> 
+  
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted, defineProps, reactive, defineExpose } from "vue";
+import children from "./children.vue";
+let visible = true;
+let FileUploadFormRef = ref<any>({});
+const FormSet = (el, type: string) => {
+    FileUploadFormRef.value[type] = el;
+};
+import { getCurrentInstance } from 'vue'
+console.log("我是this:",getCurrentInstance())
+onMounted(() => { 
+  console.log("this:",getCurrentInstance().refs)
+})
+
+</script>
+
+<style scoped></style>
+
+```
+
+
+
+ 
+
+### 5.17.2 单ref
+
+```vue
+<template>
+  <div>
+    我是父组件
+    <!-- <children :visible="visible" :ref="(el) => FormSet(el, 'd')">
+      <template v-slot:test ></template>
+    </children> -->
+    <children :visible="visible" ref="FileUploadFormRef">
+      <template v-slot:test ></template>
+    </children>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted, defineProps, reactive, defineExpose } from "vue";
+import children from "./children.vue";
+let visible = true;
+import { getCurrentInstance } from 'vue'
+console.log("我是this:",getCurrentInstance())
+onMounted(() => { 
+    // 这样子可以直接用
+  console.log("this:",getCurrentInstance().refs.FileUploadFormRef)
+})
+
+</script>
+
+<style scoped></style>
+
+```
 

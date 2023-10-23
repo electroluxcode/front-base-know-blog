@@ -955,3 +955,67 @@ export function activate(context: vscode.ExtensionContext) {
 
 ### 11.9.6 npm build 和 npm run publish 
 
+
+
+
+
+
+
+
+
+
+
+
+
+## 11.10 package.json
+
+
+
+### 11.10.1 依赖冲突的时候
+
+- 作为使用者 可以用 package.json 的 resolution 属性进行隔离
+- 作为开发者需要指定 peerdepend
+
+
+
+### 11.10.2 bin
+
+```shell
+// bin 字段 会在 会建立 node_module/.bin 中命令的映射，当我们 输入一个包的名字的时候，我们就会执行 node 映射的方法.js
+
+// 直接在 package.json 写三方依赖的命令可以被 npm 成功识别并调用的原理就是 去到了 bin 字段 
+
+
+注意一下 在这个地方的 文件头部需要加上
+#!/usr/bin/env node
+```
+
+
+
+
+
+## 11.11 npm 
+
+
+
+
+
+### 11.1.1 npm 不同版本安装的区别
+
+- npm2 是 全量 安装
+- npm3 是 多个版本的包`只能有一个`被提升上来，其余版本的包会嵌套安装到**各自的依赖当中**
+
+
+
+
+
+### 11.1.2 幽灵依赖
+
+**Phantom dependencies** 被称之为**幽灵依赖**或**幻影依赖**，解释起来很简单，即某个包没有在`package.json` 被依赖，但是用户却能够引用到这个包
+
+
+
+
+
+
+
