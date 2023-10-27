@@ -775,7 +775,7 @@ console.log("解密：", serectDecode(encodeSecret, eventSecret));
  解码：utf 编码 secret 。然后 AES解码data 
 
 ```js
-// step1:首先是 设置header x-appKey 也就是 公钥
+// step1:首先是 设置 header x-appKey 也就是 公钥
 // step2:接着设置 header 的 x-requestId 用 utf 编码 secret。然后用AES/ECB/Pkcs7加密data (这里的data是uuid + 时间)
 // step3:然后设置 header 的 x-authorization。用 x-requestId ，和公钥 拼接再用HmacSHA1加密拼接的字符串及逆行base64编码。
 // step4:然后设置 header 的 x-token，这部分在上传前就设置好了，就是用户的cookie
@@ -1138,6 +1138,39 @@ if (!this._waitingForDraw) {
 
 
 
+
+
+### 2.7.2  工程化
+
+
+
+
+
+先讲一下基础架构
+
+```mermaid
+flowchart TD
+    TOP[树组件] --> D[生成树dom] --> C[initTree 平级遍历] 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 2.8 promise
 
 
@@ -1411,8 +1444,6 @@ export{
 
 }
 ```
-
-
 
 
 

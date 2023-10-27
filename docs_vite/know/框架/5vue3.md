@@ -601,32 +601,19 @@ const ganttContainer = (el) => {
 
 
 
+### 5.0.11 v-for
 
-
-
-
-## 5.1 小技巧
-
-
-
-```js
---1. 智能提示
-vetur扩展插件导致  vscode 报错
-vue3使用建议用Volar来替换vetur
---2.差异
-与vue2的区别是根目录的index.html。里面是src/main.ts
-vue2的index.html是public中的
---3.vue-cli 创造版本的一些选项？
---3.1 Use class-style component syntax? (Y/n) n
-即原本是：home = new Vue()创建vue实例
-使用装饰器后：class home extends Vue{}
---3.2 Use Babel alongside TypeScript (required for modern mode, auto-detected polyfills, transpiling JSX)? (Y/n) y
-使用Babel与TypeScript一起用于自动检测的填充? yes
---3.3 Pick additional lint features: (Press <space> to select, <a> to toggle all, <i> to invert selection)
-
-(*) Lint on save（保存就检查代码）
-( ) Lint and fix on commit（fix和commit时候检查代码）
+```ts
+显然，在V2当中，v-for的优先级更高，而在V3当中，则是v-if的优先级更高。在V3当中，做了v-if的提升优化，去除了没有必要的计算，但同时也会带来一个无法取到v-for当中遍历的item问题
 ```
+
+
+
+
+
+vue3 是 推荐在 v-for 里面 用 temple 用一层 v-if
+
+
 
 
 
@@ -1093,7 +1080,7 @@ module.exports = {
 
 
 
-## 5.4 自定义指令
+## 5.4 directive | 自定义指令
 
 ### 5.4.0 基本
 
@@ -1745,7 +1732,61 @@ defineExpose({
 
 
 
-#### 5.10.2.3 component 
+
+
+#### 5.10.2.3 数据抽离
+
+用方法来定义一下
+
+首先在父组件中
+
+```html
+<div
+     v-for="(value, index) in TableDropDownOperationFn({ id: 1 }, nowClick)"
+     :key="index"
+     @click="value.onClick"
+     >
+      {{ index }}
+</div>
+
+
+<script>
+import { TableDropDownOperationFn } from "./config";
+let nowClick = (a: any) => {
+  console.log(a);
+};
+
+</script>
+```
+
+子组件
+
+```ts
+/**
+ * @des 2.给每一个按钮绑定上自己的事件
+ */
+ export const TableDropDownOperationFn = ( record: any, operation: ()=> void) => {
+    const data = [
+      {
+        permissionKey: 'connectPerm',
+        label: '测试按钮',
+        onClick: operation.bind(null, { key: 'button', name: '测试按钮', data: record }),
+      },
+      {
+        permissionKey: 'connect',
+        label: '信息关联',
+        onClick: operation.bind(null, { key: 'link', name: '信息关联', data: record }),
+      },
+    ]
+    return data;
+  };
+```
+
+
+
+
+
+### 5.10.3 component 
 
 
 
@@ -2050,4 +2091,32 @@ onMounted(() => {
 <style scoped></style>
 
 ```
+
+
+
+
+
+
+
+
+
+## 5.18 vue3.3
+
+
+
+闲来无事。翻了一会文档，把一些 `vue3.3` 更新的东西看了一下。看看 有没有啥有用的东西。结果真的挺让人惊喜的
+
+### 5.18.1 函数签名
+
+这个特性我感觉是在 原来的特性上面进行的优化。这是vue3.3 提供的给 函数 推断的东西 
+
+
+
+
+
+
+
+
+
+
 

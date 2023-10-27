@@ -28,8 +28,52 @@ exports.endpoint = function(request, response) {
 
 
 
-
 ## 2.1基础知识
+
+
+
+### 2.1.0 数据全解
+
+
+
+#### 2.1.0.1 判断数据
+
+调用 `Object.prototype.toString`
+
+- map: '[object Map]'
+- set:'[object Set]'
+- object:'[object Object]'
+- array:  '[object Array]'
+- async:'[object AsyncFunction]'
+- promise:判断.then 是不是一个funciton
+
+
+
+#### 2.1.0.2 一些数据的特性
+
+
+
+##### 2.1.0.2.1 for in / for of 
+
+- map
+
+  ```ts
+  
+  ```
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 2.1.0 canvas | video | image | blob
 
@@ -3712,6 +3756,92 @@ Native端和Web端的双向通信。Web调用Native端主要有两种方式，�
 
 - 真正运行代码的是require里面的一个函数。函数里面有filename和dirname。这个函数可以用arguement
 - 一开始的话。this.exports 等于this。等于exports。由于后来切分了，所以分开也可以
+
+
+
+
+
+
+
+### 2.1.88 全屏
+
+最佳实践:fullscreenchange` 事件和 `document.fullscreenElement
+
+- 事件： fullscreenchange 和 fullscreenerror
+
+  ```ts
+  const isFullScreen = () => {
+      return document.fullscreenEnabled
+          || window.fullScreen
+          || document.webkitIsFullScreen
+          || document.msFullscreenEnabled;
+  }
+  
+  ```
+
+- 进入全屏
+
+  ```ts
+  /**
+   * 全屏指定元素
+   */
+  function fullScreen(element) {
+      const runfullScreen = element.requestFullscreen
+          || element.mozRequestFullScreen
+          || element.webkitRequestFullScreen
+          || element.msRequestFullscreen;
+  
+      if (runfullScreen) runfullScreen.call(element);
+      else {
+          console.error('当前浏览器不支持部分全屏！');
+      }
+  }
+  
+  /**
+   * 退出全屏
+   */
+  function exitFullScreen() {
+      const runExit = document.exitFullscreen
+          || document.mozCancelFullScreen
+          || document.webkitExitFullscreen
+          || document.msExitFullscreen;
+  
+      if (runExit) runExit.call(document);
+      else {
+          console.error('当前浏览器不支持退出全屏！');
+      }
+  }
+  
+  ```
+
+  
+
+
+
+
+
+#### 2.1.88.1 为什么有时候进入全屏了按 Ecs 会没用？
+
+- 第一套就是我们刚才讲的，通过 web API 进入的全屏。此时 **可以通过 Esc 和 F11 退出全屏**，也可以通过 api 正常监听和退出全屏。
+- 第二套则是浏览器级别的全屏，通过 F11（或右上角设置里的全屏按钮）进入的全屏。此时 **只能通过 F11 退出全屏。**
+
+#### 2.1.88.2 全屏为什么黑屏
+
+可能是下面的样式搞的鬼
+
+```ts
+:fullscreen
+```
+
+#### 2.1.88.3 弹出表单项被遮挡问题 
+
+造成这个问题的原因是这些组件库实现弹出框的做法一般都是在 body 下创建对应的 dom 节点，而我们全屏了某个 body 下的 dom 元素后，这些弹出框的 dom 节点就被我们的全屏元素盖住了，自然就看不到了，那么怎么解决呢？
+
+```ts
+手动指定 全屏整个 Document，然后修改要展示的节点样式，让其覆盖住整个窗口：
+```
+
+
 
 
 

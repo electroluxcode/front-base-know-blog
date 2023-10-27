@@ -425,13 +425,243 @@ data.id=3  // 因为是readonly 所以会报错
 
 
 
-### 2.1.19 描述方法
+### 2.1.19 方法 的类型
 
 ```ts
 // 描述 方法
 type fn = (x:number)=> void
 interface fn {(x:number):void}
 ```
+
+
+
+
+
+
+
+### 2.2.20 构造签名 | 构造函数类型
+
+
+
+
+
+
+
+### 2.1.21 extends 
+
+```ts
+// extends 有点难度，泛型的时候会比较好用 | a 可以 给 b 分配 是 true
+/**
+ * @des 有三种含义 child extend parent
+ * @des1 变量中直接用表示约束
+ * @des2 变量外用表示扩展
+ * @des3 条件类型： 继承xxx。不是可以代替的继承就是false。?可选链 也可以发挥作用。三元表达式 type A2 = 'x' | 'y' extends 'x' ? string : number; // number
+ * @des3 分配条件类型：child 是一个泛型 + 联合类型 。会用分配率然后进行 合并 类型 type myexclude<all,item> =   all extends item ? never : all  // 防止条件判断中的分配 可以用 [ ] 框起来 type P<T> = [T] extends ['x'] ? string : number;
+ */
+
+
+type MyExclude<t,u> = t extends u ? never : t
+type MyExcludeDemo = MyExclude<MyParam,"id">
+```
+
+
+
+
+
+其实在 一个 `怎么根据你的数据获取他的指定类型`这里，你就可以大概了解一点 extends 的知识
+
+看本文章前，最好先把 extends 的分配律 和 一般类型 了解 一下。
+
+我这里简单说明一下 extends 的作用 ，这个参数在类型体操大致有两种情况
+
+- 第一种情况就是 普通的 情况。给一个代码示例 
+
+  ```ts
+  // number
+  type A2 = 'x' | 'y' extends 'x' ? string : number; 
+  // string
+  type A2 = 'x' extends  'x' | 'y' ? string : number; 
+  
+  ```
+
+  就是说 extends 后面的类型 需要 整个包住 第一个类型 那么 才是 true
+
+- 第二种情况是这样 extends 前面的 类型 是  `泛型` + `联合类型 ` 的时候，那么 会用分配率然后进行 合并 类型.这里也简单举一个例子
+
+  ```ts
+  // type A3 = string | number
+  type A2<t> = t extends 'x' ? string : number;
+  type A3 = A2<'x' | 'y'>
+  ```
+
+  看到这个例子你就应该知道是什么情况了
+
+
+
+
+
+### 2.1.22 装饰器
+
+- target: any = 
+- key: any
+- descriptor: descriptor.value 可以获得 代理的方法
+
+```ts
+// 基本
+const MethodDecorator = (param:any)=>{
+    return function (t:any,n:string,des:PropertyDescriptor){
+        const func = des.value;
+        des.value = ()=>{
+            console.log(func()+10+param)
+        }
+    }
+}
+
+class demo {
+    @MethodDecorator("nihao")
+    add(){
+        let a = 10
+        return a
+    }
+}
+let an  = new demo()
+an.add() // ts-node xx.ts 然后 输出 20nihao
+
+
+/**
+ * 
+ * @param {*} msg 
+ * @param {*} options 
+ * @returns 
+ */
+
+function errorHandle(msg: string, options: any) {
+    return function (target: any, key: any, descriptor: any) {
+        let fn = descriptor.value;
+        descriptor.value = function (...args: any[]) {
+           try{
+               fn()
+           }
+            catch{
+                console.log(msg,options)
+            }
+        }
+    }
+}
+
+class test{
+    @errorHandle("errorGet方法报错",{url:"index.ts中25行报错"})
+    public  errorGet(){
+        throw("哈哈哈哈哈")
+    }
+}
+new test().errorGet()
+```
+
+
+
+### 2.1.23  infer
+
+
+
+#### 2.1.23.1 实现pop
+
+- 除掉最后一个 元素 数组
+
+  ```ts
+  type MyPop<props> = props extends [...infer a,infer b ] ? a : never
+  type getRefTest = MyPop<["id" , "test" , "name"]>
+  ```
+
+  
+
+- 这里的数组转成联合类型。在后面添加 `[number]` 就可以了
+
+  ```ts
+  type MyPop<props> = props extends [...infer a,infer b ] ? a : never
+  type getRefTest = MyPop<["id" , "test" , "name"]>[number]
+  ```
+
+  
+
+原本就是联合类型的放弃了，什么人间疾苦
+
+
+
+
+
+
+
+#### 2.1.23.2 实现trim
+
+```ts
+type MyTrim<t extends any> = t extends `' '${infer Back}`
+? MyTrim<Back> : t;
+```
+
+
+
+
+
+
+
+
+
+#### 2.1.23.2
+
+infer 
+
+- 协变位置构建联合类型
+- 逆变位置构建交叉类型
+
+```ts
+// 给object 加上
+type MySetter<t> = {
+    [k in keyof t as `M-${string & k}`]:any
+}
+// 给联合类型 加上
+type MySetterUnion<t> = t extends any 
+? `M-${string & t}` 
+: any
+
+type MySetterTest = "one" | "two" | "three"
+
+let ba :DeepShowType<MySetter<MySetterTest  & {}>>
+let bb :DeepShowType<MySetterUnion<MySetterTest  & {}>>
+
+
+// 解绑infer 注意必须要在 extends 的 后面 
+type revertData<t> = t extends `M-${infer res}` 
+? res
+: any
+
+type revertType = DeepShowType<MySetter<MySetterTest  & {}>>
+```
+
+
+
+```ts
+/**
+ * @des 通过模式匹配的方式匹配
+ * @think 为什么不用其他
+ * 
+ */
+type getRef<props> =
+    `refs` extends keyof props
+    ? props extends { refs: infer Value | undefined }
+        ? Value
+        : never
+    : never
+
+type getRefTest = getRef<{
+    id: 3,
+    refs: "23"
+}>
+
+
+```
+
+
 
 
 
@@ -511,10 +741,6 @@ export interface Options extends Partial<DefaultOptons> {
     requestUrl: string,
 }
 ```
-
-
-
-
 
 
 
@@ -650,450 +876,19 @@ ref={backgroundRef }
 
 
 
-### 2.2.7 装饰器
 
-```ts
-// 基本
-const MethodDecorator = (param:any)=>{
-    return function (t:any,n:string,des:PropertyDescriptor){
-        const func = des.value;
-        des.value = ()=>{
-            console.log(func()+10+param)
-        }
-    }
-}
 
-class demo {
-    @MethodDecorator("nihao")
-    add(){
-        let a = 10
-        return a
-    }
-}
-let an  = new demo()
-an.add() // ts-node xx.ts 然后 输出 20nihao
 
 
 
 
 
 
-/**
- * 
- * @param {*} msg 
- * @param {*} options 
- * @returns 
- */
 
-function errorHandle(msg: string, options: any) {
-    return function (target: any, key: any, descriptor: any) {
-        let fn = descriptor.value;
-        descriptor.value = function (...args: any[]) {
-           try{
-               fn()
-           }
-            catch{
-                console.log(msg,options)
-            }
-        }
-    }
-}
 
-class test{
-    @errorHandle("errorGet方法报错",{url:"index.ts中25行报错"})
-    public  errorGet(){
-        throw("哈哈哈哈哈")
-    }
-}
-new test().errorGet()
-```
 
 
-
-
-
-
-
-### 2.2.8 inter/顺变-逆变
-
-
-
-
-
-infer 
-
-- 协变位置构建联合类型
-- 逆变位置构建交叉类型
-
-
-
-### 2.2.9  extends
-
-```ts
-// extends 有点难度，泛型的时候会比较好用 | a 可以 给 b 分配 是 true
-/**
- * @des 有三种含义 child extend parent
- * @des1 变量中直接用表示约束
- * @des2 变量外用表示扩展
- * @des3 条件类型： 继承xxx。不是可以代替的继承就是false。?可选链 也可以发挥作用。三元表达式 type A2 = 'x' | 'y' extends 'x' ? string : number; // number
- * @des3 分配条件类型：child 是一个泛型 + 联合类型 。会用分配率然后进行 合并 类型 type myexclude<all,item> =   all extends item ? never : all  // 防止条件判断中的分配 可以用 [ ] 框起来 type P<T> = [T] extends ['x'] ? string : number;
- */
-
-
-type MyExclude<t,u> = t extends u ? never : t
-type MyExcludeDemo = MyExclude<MyParam,"id">
-```
-
-
-
-
-
-
-
-
-
-## 2.3公用的一些utils ts
-
-测试可以：tsc xxx.ts
-
-
-
-### 2.3.4  speakbot
-
-```ts
-/**
- let ceshi = new speechBot({
-    text: "测试",
-    pitch: 1,
-    rate: 1,
-    volume: 20,
-    lang: 'zh-CN'
-})
-ceshi.speak("ddddddddd33")
-ceshi.cancel()
- */
-
-interface speechBotType  {
-    text:string,
-    pitch:number,
-    rate:number,
-    volume:number,
-    lang:string
-}
-class speechBot {
-    public speechProgress
-    public speechApi
-    constructor(param:speechBotType ) {
-        this.speechProgress = window.speechSynthesis
-        this.speechApi = new SpeechSynthesisUtterance()
-        this.speechApi.text = param.text ?? "没传入文本"
-        this.speechApi.rate = param.rate ?? 1
-        this.speechApi.volume = param.volume ?? 1
-        this.speechApi.lang = param.lang ?? "zh-CN"
-        this.speechApi.pitch = param.pitch ?? 1.5
- 
-    }
-    speak = function (text:string) {
-        // console.log(text,this.speechProgress)
-        this.speechApi.text = text
-        this.speechProgress.speak(this.speechApi)
-    }
-    pause = function () {
-        this.speechProgress.pause()
-    }
-    resume = function () {
-        // 暂停和非暂停切换
-        this.speechProgress.resume()
-    }
-    cancel = function () {
-        // 删除所有话语
-        this.speechProgress.cancel()
-    }
-    configGet = function () {
-        // console.log(this.speechProgress.getVoices())
-    }
-}
-
-export default new speechBot({
-    text: "测试",
-    pitch: 1,
-    rate: 1,
-    volume: 20,
-    lang: 'zh-CN'
-})
-
-
-```
-
-### 2.3.5  listenerbot
-
-```ts
-class listener {
-    constructor(param) {
-        this.config = {
-            beginText: "小圆",
-            endText: "结束",
-            aliveTime: 3
-        }
-        this.text = ""
-        this.speechRecognition = new webkitSpeechRecognition({
-            lang:"cmn-Hans-CN"
-        })
-        let that =this
-        this.speechRecognition.onaudiostart = (event) => {
-            console.log(`onsoundstart: `,event);
-
-        };
-        this.speechRecognition.onaudioend = (event) => {
-            console.log(`onsoundend:`,event);
-            setTimeout(()=>{
-                that.start()
-            },3500)
-        };
-        this.speechRecognition.onerror = (event) => {
-            console.log(`报错信息: ${event.error}`);
-            setTimeout(()=>{
-                that.start()
-            },3500)
-        };
-    }
-    start() {
-        console.log("begin");
-        this.speechRecognition.start()
-        this.speechRecognition.onresult = function (event) {
-            let results = event.results
-            console.log(results)
-            if (results.length > 0) {
-                for (var i = 0; i < results.length; i++) {
-                    this.text = results[i][0].transcript
-                    console.log(this.text)
-                    if(this.text.includes("你好")){
-                        let utterance1 = new SpeechSynthesisUtterance("你好")
-                        window.speechSynthesis.speak(utterance1)
-                    }
-                    // document.querySelector("textarea").innerHTML = text
-                }
-            }
-        }
-        this.speechRecognition.continuous = true
-        // this.speechRecognition.start()
-    }
-    end() {
-        console.log("end");
-        this.speechRecognition.stop()
-
-    }
-    alive() {
-        console.log("alive")
-    }
-}
-new listener().start()
-```
-
-
-
-
-
-
-
-### 2.3.6 tdk
-
-```ts
-interface baseParam {
-    title: string
-    description: string
-    keywords: string
-    [key: string]: any
-}
-class tdk {
-    public config: baseParam
-    constructor(param: baseParam) {
-        this.config = {
-            title: "",
-            keywords: "",
-            description: "",
-        }
-        this.config.title = param?.title
-        this.config.keywords = param?.keywords
-        this.config.description = param?.description
-        this.main()
-    }
-    main() {
-        let keywords = document.querySelector("meta[name=keywords]")
-        let title = document.querySelector("title")
-        let description = document.querySelector("meta[name=description]")
-        this.service("keywords", keywords)
-        this.service("title", title)
-        this.service("description", description)
-    }
-    service(key: string, element: Element | null) {
-        if (key == "title") {
-            element.innerHTML = this.config?.title
-            return
-        }
-        let keywords = element
-        if (keywords) {
-            keywords.setAttribute("content", this.config[key])
-        } else {
-            let temp = document.createElement("meta")
-            temp.setAttribute("name", "keywords")
-            temp.setAttribute("content", this.config.keywords)
-        }
-    }
-}
-
-// export  default tdk
-/**
- new tdk({
-    title:"你好",
-    keywords:"",
-    description:"",
- })
- */
-```
-
-
-
-### 2.3.7 ajax
-
-```ts
-interface AjaxRequest {
-    method: 'GET' | 'get' | 'POST' | 'post'
-    url: string
-    data?: any // post
-}
-
-interface AjaxResponse {
-    [prop: string]: any
-}
-//注意是async 引用的时候可以await
-async function ajax(options: AjaxRequest): Promise<AjaxResponse> {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const method = options.method.toUpperCase();
-
-        if (method === 'GET') {
-            xhr.open(method, options.url, true);
-        }
-
-        if (method === 'POST') {
-            xhr.open(method, options.url, true);
-            xhr.setRequestHeader('Content-type', 'application/json');
-            xhr.send(JSON.stringify(options.data));
-        } else {//GET
-            xhr.send();
-        }
-
-        xhr.onreadystatechange = () => {
-            // xhr.readyState == 4 请求已完成，且响应已就绪
-            if (xhr.readyState !== 4 || xhr.status === 0) return;
-            const responseData: AjaxResponse = JSON.parse(xhr.response);
-            // 当 readyState 等于 4 且status为 200 时，表示响应已就绪：
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve(responseData);
-            } else {
-                reject(`request failed with status code ${xhr.status}`);
-            }
-        };
-    });
-}
-/**
-const result = await ajax({
-    method: 'GET',
-    url: 'http:localhost:10088/get?id=2',
-    data: {
-        // redirectURI
-    }
-});
-
-console.log(result)
- */
-
-
-```
-
-
-
-## 2.4  项目中常用
-
-
-
-
-
-### 2.4.2  数据状态定义
-
-```ts
-一开始类似于这种
-enum offConfigStatus {
-  "未开始" = 1 ,
-   "下架申请中",
-}
-
-```
-
-
-
-后来像这样
-
-const.ts 里面
-
-```ts
-import {
-  AppStatusType,
-} from '@/types/manageCenter.d';
-
-
-export type AppOnlineLocal = 'online' | 'notOnline';
-export const AppStatus: AppStatusType = {
-  notOnline: '未上线',
-  online: '已上线',
-};
-
-
-```
-
-@/types/manageCenter.d 里面
-
-```ts
-type EnumTransType<T, type> = {
-  [K in T]: type;
-};
-export enum AppStatusEnum {
-  notOnline = 1,
-  online,
-}
-export type AppStatusType = EnumTransType<keyof typeof AppStatusEnum, string>;
-
-```
-
-使用起来
-
-```ts
-AppStatus[
-    AppStatusEnum[
-        item.appStatus ?? 'notOnline'
-    ] as AppOnlineLocal
-]
-    
-AppStatus["online"] // 已上线
-AppStatusEnum[item.appStatus??'notOnline'] //"online"
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 2.5 区别
+## 2.5 ts中易混淆的点
 
 
 
@@ -1392,117 +1187,6 @@ declare module "web3" {
 
 
 
-https://github.com/type-challenges/type-challenges/issues?q=is%3Aissue+is%3Aopen+label%3Aanswer
-
-
-
-## 2.1.TypeScript类型推断和interface类型引入结果无法完整显示该怎么办
-
-
-
-### 2.1.1 触发无法完整显示的情况
-
-这种情况的发生有两种情况
-
-- 是在我们做类型体操的时候，我们发现移上去他并不会展开最终的类型。
-- 还有一个情况是 你在 两个 ts 文件中传递 interface 之类的 类型的时候，有的interface 也不会展开
-
-
-
-具体表现如下
-
-
-
-<img src="./6ts/nodisplay.png">
-
-我们在本篇文章中 会写一个方法DeepShowType。
-
-原因是ts本身是懒推断的。因此大多数情况并不会进行直接的运算并进行展开。上图中我对着interface 
-
-### 2.1.2 解决
-
-既然我们知道了 ts 的 懒判断的，那么我们可以对原来的类型做一个并不会改变其结果的运算。比如 `xx = xx + 0` 这种。我们在类型编程中 在后面加上一个 `& {}`  就可以进行 进行这种不改其结果的运算。
-
-```ts
-type ShowType<t> = {
-    [k in keyof t] : t[k]
-} & {}
-```
-
-
-
-这是 比较简单的写法，但是这样这样 不能够监听到深层次的数据。
-
-
-
-我们可以 加上递归运算，也就是下面的
-
-```ts
-export type DeepShowType<t>={
-    [k in keyof t] :t[k] extends object ? DeepShowType<t[k]> : t[k]
-} & {}
-```
-
-
-
-简单的加上递归。在递归的时候用条件类型进行判断就好的，这里 的主要难点主要在 extends ，在这个情况下面它表现为 条件分配类型。但是由于这里只有他一个 
-
-所以其实 等价于 
-
-```ts
-export type DeepShowType<t>={
-    [k in keyof t] : DeepShowType<t[k]> 
-} & {}
-```
-
-最后 我们可以 运行
-
-```ts
-DeepShowType<t[k]>
-```
-
-就能够得到我们想要的结果
-
-
-
-上面截图中的测试代码我找不到了，但主代码逻辑是一样的
-
-```ts
-const test = {
-	a:'1',
-    d:{
-        id:{
-            igd:"2"
-        }
-    },
-    b:'22'
-} as const
-
-type DeepShowType<t>={
-    [k in keyof t] :t[k] extends object ? DeepShowType<t[k]> : t[k]
-} & {}
-
-type DeepKeySwitchType<t> = {
-    [k in keyof t] : t[k] extends object ? DeepKeySwitchType<t[k]> : k
-}[keyof t]
-
-let keyTest :DeepShowType<DeepKeySwitchType<typeof test> & {}>
-```
-
-
-
-### 2.1.3 最后
-
-总结一下，其实这种无法完整显示的问题，由来已久，有的人想解决，有的人懒得解决。都无所谓吧，这里给大家提供另外一个思路
-
-https://stackoverflow.com/questions/57683303/how-can-i-see-the-full-expanded-contract-of-a-typescript-type/57683652#57683652
-
-这里面似乎使用 `infer O` 和`映射类型` 来代替我 `& {}`  。但其实结果和思路都是一样的，都是 用 `xx + 0 = xx` 这种幂等性强制 ts 强制进行运算
-
-
-
-
-
 ## 2.2 项目中怎么引入第三方模块 和 扩展类型
 
 ### 2.2.1 引入.d.ts
@@ -1595,305 +1279,59 @@ declare module ali-oss {
 
 
 
-### 2.3.1  获取全部类型的情况
 
-首先是最简单的情况，我们只需要用 `typeof ` 关键词就可以 获取他的类型。
 
-```ts
-const test = {
-	a:'1',
-    b:{
-        id:"3"
-    }
-}
-type e = typeof test 
-/*
-e 是
-type e = {
-    a: string;
-    d: {
-        id: string;
-    };
-}
-*/
-```
 
 
 
-### 2.3.2 获取所有的key作为 联合类型
 
-参考下面`把extends 玩出花来`
 
-### 2.3.3 获取所有的 value 作为联合类型
 
-参考下面`把extends 玩出花来`
 
 
 
 
 
-## 2.4 怎么在ts类型体操中实现js的if/else逻辑
 
 
 
-### 2.4.0 前言
 
-其实我们在写Typescript类型体操的时候，很多时候我们需要把思维从js上面转化到ts上面。那么我们需要怎么将我们的 js 逻辑转化成 ts 的类型编程逻辑呢。这篇文章会带大家 用 比较 简单的方式实现并进行练习
 
+## 2.7 重要 | 实用工具类
 
 
-### 2.4.1 怎么实现同一层级 的  if/else
 
-例如下面伪代码
+### 2.7.3 替换某一个字符串
 
-```ts
-function IfElseFlat(t){
-    if(t == "string"){
-        return "这是string"
-    }
-     if(t == "object"){
-        return "这是object"
-    }
-    if(t == "number"){
-        return "这是object"
-    }
-    ...
-    else{
-        return "啥也不是"
-    }
-}
-```
+知识点
 
-我们应该怎么将这段逻辑转化成ts呢。原理就是利用 ts 的 `条件链`来做
-
-```ts
-type IfElseFlat<t> =
-	t extends string ? "这是string": 
-	t extends object ? "这是object":
-	t extends number ? "这是number":
-"啥也不是"
-
-// 输出 “这是object”
-type IfElseCase = IfElseFlat<{}>
-// 输出 “这是number”
-type IfElseCase2 = IfElseFlat<2>
-```
-
-
-
-注意为了可读性 ，大家都会有自己的规则。我的写法一般是一般是
-
-```ts
-type xxx = 
-	条件1 ? 结果1 :
-    条件2 ? 结果2 :
-兜底数据
-```
-
-这样子来进行 if/else 的 运算
-
-
-
-### 2.4.2 怎么实现嵌套层级 的  if/else
-
-
-
-js中类似这样的代码
-
-```ts
-function IfElseFlat(t){
-    if(t == "string"){
-        if(t=="神奇的string"){
-            return "神奇string"
-        }
-        return "这是string"
-    }
-    else{
-        return "啥也不是"
-    }
-}
-```
-
-也就是说嵌套的if/else ，就是把条件语句嵌套一下。两层 嵌套的格式就是 ? ? : :  。三层嵌套就是 ? ? ? : : :
-
-```ts
-type IfElseDeep1<t> =
-    t extends string ? 
-        t extends "神奇string"?
-        "很神奇的string":
-    "这是string":
-"啥也不是"
-
-type IfElseCase = IfElseDeep1<"神奇string">
-```
-
-
-
-
-
-![an声明的string](6ts.assets/an%E5%A3%B0%E6%98%8E%E7%9A%84string.png)
-
-![声明的string](6ts.assets/%E5%A3%B0%E6%98%8E%E7%9A%84string.png)
-
-也就是说语句可以总结成这样
-
-```ts
-type xxx = 
-	(
-        条件1  ?
-            (
-                条件2 ? 
-                结果2 :
-            )
-        结果1:
-	)
-兜底数据
-```
-
-这样子来进行 if/else 的 运算.最后注意一下嵌套下面的tab
-
-
-
-### 2.4.3 简单讲一下 嵌套 + 平级下面的套路
-
-我们实际的类型编程中很少单独 其实只要多练习就好了。我们可以在平时有意识的练习这一块。主要就是把我们的js转化成ts 的 类型编程
-
-比如下面的伪代码
-
-```ts
-function IfElseFlat(t){
-    if(t=="string"){
-        if(t=="hello"){
-            return "这是hello"
-        }else{
-            return "这不是hello"
-        }
-    }else if(t=="object"){
-        return "这是object"
-    }else{
-        return "啥也不是"
-    }
-}
-```
-
-我们可以将他尝试着变成类型的方法。简单的讲一下关键点
-
-- 自上到下
-- 遇上嵌套的if 用 ( )包裹 ，同时注意 输入` tab` 保持代码的可读(代码块每嵌套一个层级增加一个tab)
-- 优先处理 ? : 在 : 后面的逻辑，然后处理 ? 和 :中间的逻辑
-
-
-
-这里我们采用渐进的演示方法，来给朋友直观讲述咱们的代码是怎么转化的
-
-- step1:处理 `if(t=="string")` 中 `else` 的逻辑
-
-  ```ts
-  type IfElseFlat<t> = 
-  t extends string ?
-      // 代码块
-  : "啥也不是"
-  ```
-
-- step2:处理 `if(t=="string")`  的主逻辑，里面是嵌套逻辑因此套上一层 ()
-
-  ```ts
-  type IfElseFlat<t> = 
-  t extends string ?
-      (
-          t extends "hello" ?
-          "这是hello":
-          "这不是hello"
-      )
-  : "啥也不是"
-  ```
-
-- step3:然后处理一下 `else if(t=="object")`的情况,这个东西是平级因此我们可以直接在 
-
-  ```ts
-  : "啥也不是"
-  ```
-
-  的上一行写入我们的逻辑，最终的成果也就是
-
-  ```ts
-  type IfElseFlat<t> =
-  	t extends string ? 
-          (
-              t extends "hello" ?
-              "这是hello":
-              "这不是hello"
-          )
-      : 
-  	t extends object ? "这是object":
-  "啥也不是"
-  ```
+- infer
 
   
 
-### 2.4.4 总结一下格式
-
-
-
-- 平级if/else 
-
-  每一行都是 `? :` +  兜底数据 
-
-  ```ts
-  	条件1 ? 结果1 :
-      条件2 ? 结果2 :
-  兜底数据
-  ```
-
-- 嵌套 
-
-  每一行 都是 `  ? ` 
-
-  多行必然是 ? ? : : 这样的 a* b*格式的数据
-
-  注意添加括号和空行
-
-  ```ts
-  type xxx = 
-  	(
-          条件1  ?
-              (
-                  条件2 ? 
-                  结果2 :
-              )
-          结果1:
-  	)
-  兜底数据
-  ```
-
-- 嵌套 + 平级
-
-  - 自上到下
-  - 遇上嵌套的if 用 ( )包裹 ，同时注意 输入` tab` 保持代码的可读(代码块每嵌套一个层级增加一个tab)
-  - 优先处理 ? : 在 : 后面的逻辑，然后处理 ? 和 :中间的逻辑
+```ts
+type MyReplace<origintext extends string,beforestr extends string,afterstr extends string> = 
+    origintext extends `${infer first}${beforestr}${infer second}` ? 
+    `${first}${afterstr}${second}` : 
+origintext
+```
 
 
 
 
 
-### 2.4.5 留一个小作业 | 如何用符号连接object多层级并且合并成联合类型
-
-如果你真的搞懂了 文章讲的内容，可以试一下完成下面的练习
-
-涉及的知识点有
-
-- 映射类型
-- if/else 逻辑转化(也叫做条件语句)
-- extends 
-- 字面量类型
-
-如果有哪一个知识点不懂，可以先查阅一下资料再来做
-
-好的，我们开始出题。我目前有这样一个 数据。我需要把他的结构用联合类型表达出来
-
-> input 
+### 2.7.4  如何封装一个函数实现 取出 指定的格式
 
 ```ts
+type PropType<t, path extends string> =
+path extends keyof t ? t[path] :
+    path extends `${infer first}.${infer second}` ?
+        first extends keyof t ?
+        PropType<t[first], second> :
+    unknown :
+unknown 
+
+
 let obj = {
     a:{
         b:{
@@ -1905,19 +1343,95 @@ let obj = {
         e:""
     }
 }
+type getprop<t,p extends string> = PropType<t,p>
+type test2 = getprop<typeof obj,"a.b">
 ```
 
-> output
+
+
+
+
+### 2.7.5 怎么把你数据 所有 value合并成 联合类型
 
 ```ts
-type result = "a.b.d" | "a.b.c" | "d.e"
+const test = {
+	a:'1',
+    d:{
+        id:"3"
+    }
+} as const
+
+type DeepValueSwitchType<t> = {
+    [k in keyof t] :  t[k] extends object ? DeepValueSwitchType<t[k]> : t[k]
+}[keyof t]
+
+type e = DeepValueSwitchType<typeof test> 
 ```
 
 
 
-各位可以先想一下，答案我放在下面，
 
 
+### 2.7.6 把所有key 合并成联合 类型
+
+```ts
+const test = {
+	a:'1',
+    d:{
+        id:"3"
+    }
+}
+
+type DeepKeySwitchType<t> = {
+    [k in keyof t] : t[k] extends object ? DeepKeySwitchType<t[k]> : k
+}[keyof t]
+
+type e = DeepKeySwitchType<typeof test> 
+```
+
+
+
+### 2.7.7  怎么把你数据里面递归的 添加/删掉 关于 可写/可选的属性
+
+这一道题其实对应着四道道题目。但是只要理解了如何增加和删除其他的也就很容易弄懂了
+
+- 怎么批量添加可写属性
+- 怎么批量删掉可选属性
+- 怎么批量添加可写属性
+- 怎么批量删掉可选属性
+
+
+
+我们可以先简单实现一个 单体去除 
+
+```ts
+type WriteOptionAble<t> = {
+    [p in keyof t] ?: t[p]
+    // [p in keyof t] -?: t[p]
+    // -readonly [p in keyof t] : t[p]
+    // -readonly [p in keyof t] : t[p]
+}
+
+```
+
+然后我们 可以 判断当前的 数据 是不是 object ，如果是 object 我们就 进行递归
+
+```ts
+type WriteOptionAble<t> = {
+    [p in keyof t] ?: t[p] extends object ? WriteOptionAble<t[p]> : t[p]
+}
+interface a {
+    id:{
+        name:number
+    }
+    name:number
+}
+type b =  WriteOptionAble<a>
+```
+
+
+
+### 2.7.8 符号连接
 
 ```ts
 let obj = {
@@ -1949,250 +1463,9 @@ let cd :flatcase= "a.b.c"
 
 
 
-这里的难点在于用到了两个 嵌套的 extends
 
 
-
-上面这个函数可能没有什么实际作用，下面我们来封装一个工程上有用的东西
-
-
-
-### 2.4.6 留一个小作业 | 如何封装一个函数实现 取出 指定的格式
-
-我目前有这样一个 数据。我需要传入 他的 type和它层级的数据然后返回当前层级的type
-
-> input 
-
-```ts
-let obj = {
-    a:{
-        b:{
-            c:"ddd",
-            d:5
-        }
-    },
-    d:{
-        e:""
-    }
-}
-```
-
-> output
-
-```ts
-// 调用 getprop<typeof obj,"a.b"> 得到数据
-/*
-type test2 = {
-    c: string;
-    d: number;
-}
-*/
-
-type test2 = PropType<typeof obj,"a.b">
-```
-
-
-
-
-
-各位可以先想一下，答案我放在下面
-
-```tsx
-type PropType<t, path extends string> =
-path extends keyof t 
-    ? t[path] :
-        path extends `${infer first}.${infer second}` ?
-            (first extends keyof t ?
-                PropType<t[first], second> :
-            unknown
-            ) :
-        unknown 
-
-
-let obj = {
-    a:{
-        b:{
-            c:"ddd",
-            d:5
-        }
-    },
-    d:{
-        e:""
-    }
-}
-// type getprop<t,p extends string> = PropType<t,p>
-type test2 = PropType<typeof obj,"a.b">
-```
-
-
-
-很明显这里有三层嵌套的层级，很aw。各位可以慢慢理解
-
-
-
-
-
-
-
-## 2.5 extends 玩出花来
-
-
-
-### 2.5.1 基础
-
-其实在 一个 `怎么根据你的数据获取他的指定类型`这里，你就可以大概了解一点 extends 的知识
-
-看本文章前，最好先把 extends 的分配律 和 一般类型 了解 一下。
-
-我这里简单说明一下 extends 的作用 ，这个参数在类型体操大致有两种情况
-
-- 第一种情况就是 普通的 情况。给一个代码示例 
-
-  ```ts
-  // number
-  type A2 = 'x' | 'y' extends 'x' ? string : number; 
-  // string
-  type A2 = 'x' extends  'x' | 'y' ? string : number; 
-  
-  ```
-
-  就是说 extends 后面的类型 需要 整个包住 第一个类型 那么 才是 true
-
-- 第二种情况是这样 extends 前面的 类型 是  `泛型` + `联合类型 ` 的时候，那么 会用分配率然后进行 合并 类型.这里也简单举一个例子
-
-  ```ts
-  // type A3 = string | number
-  type A2<t> = t extends 'x' ? string : number;
-  type A3 = A2<'x' | 'y'>
-  ```
-
-  看到这个例子你就应该知道是什么情况了
-
-
-
-
-
-**在业务代码中**
-
-简单说一下不在 类型 体操中 extends 的作用 ，相比之下就简单多了
-
-```ts
-class a {
-    id : number;
-}
-
-class b extends a {
-    constructor(){
-        super()
-    }
-}
- 
-
-```
-
-这样子  声明 interface b 或者是 class b 就能够 继承 a
-
-
-
-
-
-
-
-### 2.4.2 进阶
-
-
-
-
-
-我们现在 会了 extends 的 基础 用法 ，我们看一下 extends在 类型 体操中 有什么 比较好的 用法吧
-
-#### 2.5.2.1  实现 myExclude
-
-这个算是比较基础的，就是简单用我们的 分配律就好了
-
-```ts
-type MyExclude<t,k> = t extends k ? never : t
-```
-
-
-
-
-
-#### 2.5.2.2 怎么把你数据 所有 key 合并成 联合类型 
-
-
-
-
-
-单层的嵌套是这样
-
-```ts
-const test = {
-	a:'1',
-    d:{
-        id:"3"
-    }
-}
-type KeySwitchType<t>=keyof t
-type e = KeySwitchType<typeof test> 
-                       
-/*
-type e = "a" | "d"
-*/
-```
-
-**多层**的嵌套是这样
-
-```ts
-const test = {
-	a:'1',
-    d:{
-        id:"3"
-    }
-}
-
-type DeepKeySwitchType<t> = {
-    [k in keyof t] : t[k] extends object ? DeepKeySwitchType<t[k]> : k
-}[keyof t]
-
-type e = DeepKeySwitchType<typeof test> 
-```
-
-
-
-总结一下知识点
-
-- 映射类型 ：跟 for in 有点像，将你的 联合类型 能够遍历出来
-- extends : 在这里就是判断一下类型
-- 三元表达式：基本格式如下 a ? b: c :意思是 a中的表达式是true，那么执行b，不然执行 c
-- 最后的 [keyof t] : 这是 可以把 record 格式 的 key 值 分别进行 赋值 并且 组合成 联合类型
-
-
-
-#### 2.5.2.3 怎么把你数据 所有 value合并成 联合类型 
-
-其实跟上面差不多
-
-```ts
-const test = {
-	a:'1',
-    d:{
-        id:"3"
-    }
-} as const
-
-type DeepValueSwitchType<t> = {
-    [k in keyof t] :  t[k] extends object ? DeepValueSwitchType<t[k]> : t[k]
-}[keyof t]
-
-type e = DeepValueSwitchType<typeof test> 
-```
-
-
-
-#### 2.5.2.4 怎么把你数据 所有的可选类型 提取出来
-
-这个东西 稍微会复杂一点，但是本质上还是上面的思路
+### 2.7.9 把可选类型 提取出来
 
 ```ts
 type DeepShowType<t> = {
@@ -2213,82 +1486,11 @@ type DeepOptionAble<t>= {
 type b =  DeepShowType<DeepOptionAble<a>>
 ```
 
-- 这里我们 可以看到 我们 第一次筛选出来 obj 这个属性。由于没有对object 进行 判断，所以是这样
 
 
 
 
-
-## 2.6  ts 中的 递归
-
-
-
-所谓递归就是自己调用自己
-
-
-
-### 2.6.1  怎么把你数据里面递归的 添加/删掉 关于 可写/可选的属性
-
-这一道题其实对应着四道道题目。但是只要理解了如何增加和删除其他的也就很容易弄懂了
-
-- 怎么批量添加可写属性
-- 怎么批量删掉可选属性
-- 怎么批量添加可写属性
-- 怎么批量删掉可选属性
-
-
-
-我们可以先简单实现一个 单体去除 
-
-```ts
-type WriteOptionAble<t> = {
-    [p in keyof t] ?: t[p]
-    // [p in keyof t] -?: t[p]
-    // -readonly [p in keyof t] : t[p]
-    // -readonly [p in keyof t] : t[p]
-}
-
-
-
-
-```
-
-然后我们 可以 判断当前的 数据 是不是 object ，如果是 object 我们就 进行递归
-
-```ts
-type WriteOptionAble<t> = {
-    [p in keyof t] ?: t[p] extends object ? WriteOptionAble<t[p]> : t[p]
-}
-interface a {
-    id:{
-        name:number
-    }
-    name:number
-}
-type b =  WriteOptionAble<a>
-```
-
-- 映射类型 ：跟 for in 有点像，将你的 联合类型 能够遍历出来
-- extends : 在这里就是判断一下类型
-- 条件类型三元表达式：基本格式如下 a ? b: c :意思是 a中的表达式是true，那么执行b，不然执行 c
-
-
-
-
-
-
-
-
-
-
-
-
-
-## 2.7 实用工具类
-
-
-
-### 2.7.1 自定义object 的 前缀 或者后缀 getter
+### 2.7.10 infer | 提取复原
 
 这里的知识点是字面量类型。可以实现的功能是给我们的 object 自定义的加上前缀
 
@@ -2305,23 +1507,34 @@ type union = `margin-${base}`
 
 然后来实现我们的工具类
 
-```ts
-type GetterAble<t,str>={
-    [k in  keyof t as `${string & str}${string & k}`] : t[k]
-}
-interface te{
-    id:string
-}
-let ca :GetterAble< te,"getter-">
-```
+- 针对于object
+
+  ```ts
+  type GetterAble<t,str>={
+      [k in  keyof t as `${string & str}${string & k}`] : t[k]
+  }
+  interface te{
+      id:string
+  }
+  let ca :GetterAble<te,"getter-">
+  ```
+
+- 针对于interface
+
+  ```ts
+  type v= "id" | "test"
+  
+  type GetterAble<t extends string> = t extends any 
+  ?  `m-${t}` : any
+  
+  type case4 = GetterAble<v>
+  ```
+
+  
 
 
 
-
-
-### 2.7.2 取出 getter
-
-- infer
+提取
 
 ```ts
 // fetch 出 getter
@@ -2334,51 +1547,205 @@ type test5 = GetterFetchAble<test3,"-getter">
 
 
 
-### 2.7.3 替换某一个字符串
 
-知识点
 
-- infer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 2.8 重要 | ts优化代码 
+
+
+
+
+
+### 2.8.1 减少重复代码 | interface扩展
+
+例如下面代码
+
+```ts
+interface Person {
+  firstName: string;
+  lastName: string;
+}
+```
+
+我们有一个需求是要 合并interface 代码
+
+- 可以用extends
+
+- 也可以用 交叉运算符 &
+
+  ```ts
+  interface person{
+      id:string;
+  }
+  type personEx = person & {
+      name?:string
+  }
+  type DeepShowType<t> = {
+      [k in keyof t] : t[k] extends object ? DeepShowType<t[k]> : t[k]
+  } & {}
+  
+  let er :DeepShowType<personEx> = {
+      id:"d"
+  }
+  
+  ```
 
   
 
-```ts
-type MyReplace<origintext extends string,beforestr extends string,afterstr extends string> = 
-    origintext extends `${infer first}${beforestr}${infer second}` ? 
-    `${first}${afterstr}${second}` : 
-origintext
-```
 
 
 
 
 
-### 2.7.4  根据数据取出一个type
+
+### 2.8.2   减少重复代码 | typeof快速匹配形状 + 更加准确的类型
+
+
 
 ```ts
-type PropType<t, path extends string> =
-path extends keyof t ? t[path] :
-    path extends `${infer first}.${infer second}` ?
-        first extends keyof t ?
-        PropType<t[first], second> :
-    unknown :
-unknown 
-
-
-let obj = {
-    a:{
-        b:{
-            c:"ddd",
-            d:5
-        }
-    },
-    d:{
-        e:""
+let data = {
+    id:1,
+    name:{
+        sex:"boy",
+        date:new Date("1991-11-31")
     }
 }
-type getprop<t,p extends string> = PropType<t,p>
-type test2 = getprop<typeof obj,"a.b">
+type personEx = typeof data
+type DeepShowType<t> = {
+    [k in keyof t] : t[k] extends object ? DeepShowType<t[k]> : t[k]
+} & {}
+
+let ez : DeepShowType<personEx>
+let ea :DeepShowType<personEx["id"]>
 ```
+
+
+
+
+
+### 2.8.3 智能提示优化 | 不同场景
+
+
+
+```ts
+interface RequestPending {
+    state: "pending";
+}
+
+interface RequestSuccess {
+    state: "ok";
+    pageContent: string;
+}
+
+type RequestState = RequestPending | RequestSuccess;
+
+interface State {
+    currentPage: string;
+    requests: { [page: string]: RequestState };
+}
+```
+
+
+
+### 2.8.4 函数重载
+
+```ts
+function double(x: number): number;
+function double(x: string): string;
+function double(x: any) {
+  return x + x;
+}
+```
+
+
+
+
+
+### 2.8.5 状态定义
+
+
+
+
+
+```ts
+一开始类似于这种
+enum offConfigStatus {
+  "未开始" = 1 ,
+   "下架申请中",
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
